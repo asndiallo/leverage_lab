@@ -1,6 +1,7 @@
 import { getProperties, getPortfolioYields, getLoans, getCashflowRange } from "@/lib/queries";
 import { PortfolioSummary } from "@/components/PortfolioSummary";
 import { PropertyCard } from "@/components/PropertyCard";
+import { NewPropertyForm } from "@/components/forms/NewPropertyForm";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import type { MonthlyCashflow } from "@/types/database";
 
@@ -43,6 +44,8 @@ export default async function PortfolioPage() {
         <h1 className="text-lg font-semibold">Portfolio</h1>
         <p className="text-sm text-muted">Predictive cash flow across your properties.</p>
       </div>
+
+      <NewPropertyForm />
 
       {properties.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">

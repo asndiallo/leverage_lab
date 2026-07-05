@@ -20,6 +20,18 @@ export type TransactionWithCategory = Transaction & {
   } | null;
 };
 
+export async function getCategories(): Promise<
+  { code: string; label: string; category_group: CategoryGroup }[]
+> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transaction_categories")
+    .select("code, label, category_group")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getProperties(): Promise<Property[]> {
   const supabase = createClient();
   const { data, error } = await supabase

@@ -11,6 +11,7 @@ import {
   getTaxBreakdown,
   getCashflowRange,
   getTransactions,
+  getCategories,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
@@ -18,6 +19,8 @@ import { MetricsRow } from "@/components/MetricsRow";
 import { CashflowStrip } from "@/components/CashflowStrip";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { TransactionsTable } from "@/components/TransactionsTable";
+import { LeaseForm } from "@/components/forms/LeaseForm";
+import { TransactionForm } from "@/components/forms/TransactionForm";
 
 export const dynamic = "force-dynamic";
 
@@ -25,14 +28,16 @@ export default async function PropertyPage({ params }: { params: { id: string } 
   const property = await getProperty(params.id);
   if (!property) notFound();
 
-  const [loans, loanPayments, yields, taxBasisCents, taxYear, transactions] = await Promise.all([
-    getLoans(params.id),
-    getLoanPayments(params.id),
-    getPropertyYields(params.id),
-    getTaxBasisCents(params.id),
-    getLatestTaxRateYear(params.id),
-    getTransactions(params.id),
-  ]);
+  const [loans, loanPayments, yields, taxBasisCents, taxYear, transactions, categories] =
+    await Promise.all([
+      getLoans(params.id),
+      getLoanPayments(params.id),
+      getPropertyYields(params.id),
+      getTaxBasisCents(params.id),
+      getLatestTaxRateYear(params.id),
+      getTransactions(params.id),
+      getCategories(),
+    ]);
 
   const loan = loans.find((l) => l.status === "active") ?? loans[0] ?? null;
   const loanPayment = loanPayments.find((p) => p.loan_id === loan?.id) ?? loanPayments[0] ?? null;
@@ -71,6 +76,11 @@ export default async function PropertyPage({ params }: { params: { id: string } 
         annualTaxCents={annualTaxCents}
         taxYear={taxYear}
       />
+
+      <div className="flex flex-wrap gap-3">
+        <LeaseForm propertyId={params.id} />
+        <TransactionForm propertyId={params.id} categories={categories} />
+      </div>
 
       <CashflowStrip rows={cashflow} />
 
