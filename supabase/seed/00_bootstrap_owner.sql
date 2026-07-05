@@ -5,10 +5,15 @@
 -- Run with:  psql "$DB_URL" -v owner_email=you@example.com -v owner_pw="$(cat pwfile)"
 -- =============================================================================
 
+-- NOTE: GoTrue scans the token columns as non-null strings — a bare insert that
+-- leaves them NULL makes user lookups fail ("Database error finding user"), so
+-- they must be set to '' (empty string), not NULL.
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at, created_at, updated_at,
-  raw_app_meta_data, raw_user_meta_data
+  raw_app_meta_data, raw_user_meta_data,
+  confirmation_token, recovery_token, email_change, email_change_token_new,
+  email_change_token_current, phone_change, phone_change_token, reauthentication_token
 )
 select
   '00000000-0000-0000-0000-000000000000',
@@ -18,7 +23,8 @@ select
   crypt(:'owner_pw', gen_salt('bf')),
   now(), now(), now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{}'::jsonb
+  '{}'::jsonb,
+  '', '', '', '', '', '', '', ''
 where not exists (select 1 from auth.users where email = :'owner_email');
 
 insert into auth.identities (

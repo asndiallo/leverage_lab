@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: 249 250 251;   /* gray-50  */
+  --surface: 255 255 255;  /* white    */
+  --border: 229 231 235;   /* gray-200 */
+  --ink: 17 24 39;         /* gray-900 */
+  --muted: 107 114 128;    /* gray-500 */
+  --brand: 37 99 235;      /* blue-600 */
+  --positive: 22 163 74;   /* green-600 */
+  --negative: 220 38 38;   /* red-600  */
+  --warn: 217 119 6;       /* amber-600 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: 17 24 39;      /* gray-900 */
+    --surface: 31 41 55;     /* gray-800 */
+    --border: 55 65 81;      /* gray-700 */
+    --ink: 243 244 246;      /* gray-100 */
+    --muted: 156 163 175;    /* gray-400 */
+    --brand: 96 165 250;     /* blue-400 */
+    --positive: 74 222 128;  /* green-400 */
+    --negative: 248 113 113; /* red-400  */
+    --warn: 251 191 36;      /* amber-400 */
+  }
+}
+
+body {
+  background-color: rgb(var(--canvas));
+  color: rgb(var(--ink));
+}
+
+/* Estimate (not-a-fact) treatment — used wherever is_estimate/projected is true. */
+.is-estimate {
+  border-style: dashed;
+  opacity: 0.9;
+}

@@ -533,6 +533,14 @@ export interface Database {
         Args: { p_property_id: string; p_month: DateStr };
         Returns: MonthlyCashflow[];
       };
+      property_cashflow_range: {
+        Args: { p_property_id: string; p_start: DateStr; p_months: number };
+        Returns: MonthlyCashflow[];
+      };
+      property_tax_breakdown: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: TaxBreakdownRow[];
+      };
     };
   };
 }
@@ -577,4 +585,16 @@ export interface MonthlyCashflow {
   vacancy_reserve_cents: number;
   maintenance_reserve_cents: number;
   net_cashflow_cents: number;
+}
+
+// Return shape of property_tax_breakdown() — one row per taxing jurisdiction.
+export interface TaxBreakdownRow {
+  jurisdiction_id: string;
+  name: string;
+  jurisdiction_type: JurisdictionType;
+  rate: number;
+  base_cents: number;
+  exemption_cents: number;
+  taxable_cents: number;
+  tax_cents: number;
 }
