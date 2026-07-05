@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+
+# next.js
+/.next/
+/out/
+/build/
+next-env.d.ts
+
+# env — never commit real secrets; .env.example is the tracked template
+.env
+.env*.local
+
+# supabase local + link state (machine-specific, may contain connection strings)
+supabase/.temp/
+supabase/.branches/
+
+# misc
+.DS_Store
+*.log
+*.tsbuildinfo
