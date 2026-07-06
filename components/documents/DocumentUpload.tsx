@@ -10,18 +10,8 @@ import { FormDialog } from "@/components/forms/FormDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentType } from "@/types/database";
-
-const docTypes: DocumentType[] = [
-  "receipt",
-  "lease",
-  "closing_disclosure",
-  "tax_document",
-  "insurance",
-  "statement",
-  "appraisal",
-  "other",
-];
 
 export function DocumentUpload({
   propertyId,
@@ -90,7 +80,7 @@ export function DocumentUpload({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {docTypes.map((t) => (
+                {DOCUMENT_TYPES.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t.replace(/_/g, " ")}
                   </SelectItem>
