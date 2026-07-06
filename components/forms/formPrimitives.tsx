@@ -1,28 +1,34 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
-export const inputClass =
-  "mt-1 w-full rounded-lg border border-border bg-canvas px-3 py-2 text-sm outline-none focus:border-brand";
-
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <label className="block text-sm font-medium">
-      <span className="text-muted">{label}</span>
+    <Label className={cn("flex flex-col items-start gap-1.5 text-xs font-medium text-muted-foreground", className)}>
+      <span>{label}</span>
       {children}
-    </label>
+    </Label>
   );
 }
 
 export function SubmitButton({ label = "Save" }: { label?: string }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-    >
+    <Button type="submit" disabled={pending}>
+      {pending && <Loader2 className="size-4 animate-spin" />}
       {pending ? "Saving…" : label}
-    </button>
+    </Button>
   );
 }

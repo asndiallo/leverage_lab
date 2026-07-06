@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Leverage Lab",
@@ -12,8 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen antialiased">{children}</body>
+    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable)}>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+      </body>
     </html>
   );
 }

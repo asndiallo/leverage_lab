@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import {
   getProperty,
@@ -81,8 +82,12 @@ export default async function PropertyPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/" className="text-sm text-muted hover:text-ink">
-        ← Portfolio
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Portfolio
       </Link>
 
       <HeaderCard property={property} loan={loan} loanPayment={loanPayment} escrow={escrow} />

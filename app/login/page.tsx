@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { inputClass } from "@/components/forms/formPrimitives";
+import { Field } from "@/components/forms/formPrimitives";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import GoogleIcon from "@/components/GoogleIcon";
 
 type Mode = "signin" | "signup" | "forgot" | "magic";
@@ -93,16 +98,21 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-sm">
-        <h1 className="text-xl font-semibold tracking-tight">Leverage Lab</h1>
-        <p className="mt-1 text-sm text-muted">{COPY[mode].title}</p>
+      <Card className="w-full max-w-sm p-8">
+        <div className="flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+            LL
+          </span>
+          <h1 className="text-xl font-semibold tracking-tight">Leverage Lab</h1>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground">{COPY[mode].title}</p>
 
         {sent ? (
-          <div className="mt-6 rounded-lg border border-border bg-canvas p-4 text-sm">
+          <div className="mt-6 rounded-lg border bg-muted/40 p-4 text-sm">
             Check your email for a link.
-            <span className="mt-1 block text-muted">
+            <span className="mt-1 block text-muted-foreground">
               Local dev: open Mailpit at{" "}
-              <a className="text-brand underline" href="http://127.0.0.1:54324" target="_blank" rel="noreferrer">
+              <a className="text-primary underline" href="http://127.0.0.1:54324" target="_blank" rel="noreferrer">
                 127.0.0.1:54324
               </a>
               .
@@ -110,39 +120,37 @@ export default function LoginPage() {
           </div>
         ) : (
           <>
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onGoogle}
               disabled={loading}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-canvas px-3 py-2 text-sm font-medium hover:bg-surface disabled:opacity-60"
+              className="mt-6 w-full"
             >
-              <GoogleIcon className="h-4 w-4" />
+              <GoogleIcon className="size-4" />
               Continue with Google
-            </button>
+            </Button>
 
-            <div className="my-4 flex items-center gap-3 text-xs text-muted">
-              <div className="h-px flex-1 bg-border" />
+            <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <Separator className="flex-1" />
               or
-              <div className="h-px flex-1 bg-border" />
+              <Separator className="flex-1" />
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
-              <label className="block text-sm font-medium">
-                Email
-                <input
+              <Field label="Email">
+                <Input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className={inputClass}
                 />
-              </label>
+              </Field>
 
               {needsPassword && (
-                <label className="block text-sm font-medium">
-                  Password
-                  <input
+                <Field label="Password">
+                  <Input
                     type="password"
                     required
                     minLength={6}
@@ -150,45 +158,41 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    className={inputClass}
                   />
-                </label>
+                </Field>
               )}
 
-              {error && <p className="text-sm text-negative">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
-              >
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading && <Loader2 className="size-4 animate-spin" />}
                 {loading ? "Working…" : COPY[mode].cta}
-              </button>
+              </Button>
             </form>
 
             <div className="mt-4 flex flex-col gap-1.5 text-sm">
               {mode === "signin" && (
                 <>
-                  <button onClick={() => switchMode("forgot")} className="text-left text-muted hover:text-ink">
+                  <button onClick={() => switchMode("forgot")} className="text-left text-muted-foreground hover:text-foreground">
                     Forgot password?
                   </button>
-                  <button onClick={() => switchMode("magic")} className="text-left text-muted hover:text-ink">
+                  <button onClick={() => switchMode("magic")} className="text-left text-muted-foreground hover:text-foreground">
                     Email me a magic link instead
                   </button>
-                  <button onClick={() => switchMode("signup")} className="text-left text-muted hover:text-ink">
+                  <button onClick={() => switchMode("signup")} className="text-left text-muted-foreground hover:text-foreground">
                     Don&apos;t have an account? Sign up
                   </button>
                 </>
               )}
               {mode !== "signin" && (
-                <button onClick={() => switchMode("signin")} className="text-left text-muted hover:text-ink">
+                <button onClick={() => switchMode("signin")} className="text-left text-muted-foreground hover:text-foreground">
                   Back to sign in
                 </button>
               )}
             </div>
           </>
         )}
-      </div>
+      </Card>
     </main>
   );
 }

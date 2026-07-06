@@ -1,4 +1,12 @@
-import { inputClass } from "./formPrimitives";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { CategoryGroup } from "@/types/database";
 
 export type CategoryOption = { code: string; label: string; category_group: CategoryGroup };
@@ -27,21 +35,22 @@ export function CategorySelect({
     grouped.set(c.category_group, arr);
   }
   return (
-    <select name={name} required defaultValue={defaultValue} className={inputClass}>
-      {defaultValue === "" && (
-        <option value="" disabled>
-          Select…
-        </option>
-      )}
-      {[...grouped.entries()].map(([group, items]) => (
-        <optgroup key={group} label={groupLabels[group]}>
-          {items.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.label}
-            </option>
-          ))}
-        </optgroup>
-      ))}
-    </select>
+    <Select name={name} required defaultValue={defaultValue || undefined}>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select…" />
+      </SelectTrigger>
+      <SelectContent>
+        {[...grouped.entries()].map(([group, items]) => (
+          <SelectGroup key={group}>
+            <SelectLabel>{groupLabels[group]}</SelectLabel>
+            {items.map((c) => (
+              <SelectItem key={c.code} value={c.code}>
+                {c.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

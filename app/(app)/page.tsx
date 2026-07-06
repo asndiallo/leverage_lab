@@ -40,16 +40,17 @@ export default async function PortfolioPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">Portfolio</h1>
-        <p className="text-sm text-muted">Predictive cash flow across your properties.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">Portfolio</h1>
+          <p className="text-sm text-muted-foreground">Predictive cash flow across your properties.</p>
+        </div>
+        <NewPropertyForm />
       </div>
 
-      <NewPropertyForm />
-
       {properties.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted">
-          No properties yet. Data entry forms are coming in the next slice.
+        <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+          No properties yet. Add your first property to get started.
         </div>
       ) : (
         <>

@@ -1,18 +1,20 @@
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { money, percent, dateLabel } from "@/lib/format";
 import type { Property, Loan, LoanPayment, EscrowSchedule, PropertyStatus } from "@/types/database";
 
-const statusVariant: Record<PropertyStatus, "positive" | "warn" | "neutral"> = {
+const statusVariant: Record<PropertyStatus, "positive" | "warn" | "outline"> = {
   active: "positive",
   pending: "warn",
-  sold: "neutral",
+  sold: "outline",
 };
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4 py-1 text-sm">
-      <span className="text-muted">{label}</span>
-      <span className="tabular-nums text-right">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-mono tabular-nums">{value}</span>
     </div>
   );
 }
@@ -29,15 +31,15 @@ export function HeaderCard({
   escrow: EscrowSchedule | null;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-6">
+    <Card className="p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">{property.address}</h1>
-          <p className="text-sm text-muted">
+          <h1 className="text-xl font-semibold tracking-tight">{property.address}</h1>
+          <p className="text-sm text-muted-foreground">
             {property.city}, {property.state} {property.zip}
           </p>
           {property.cad_account && (
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-xs text-muted-foreground">
               CAD {property.cad_account}
               {property.parcel_id ? ` · Parcel ${property.parcel_id}` : ""}
             </p>
@@ -46,7 +48,9 @@ export function HeaderCard({
         <Badge variant={statusVariant[property.status]}>{property.status}</Badge>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
+      <Separator className="my-4" />
+
+      <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
         <div>
           <Row label="Purchase price" value={money(property.purchase_price_cents)} />
           <Row label="Purchase date" value={dateLabel(property.purchase_date)} />
@@ -73,6 +77,6 @@ export function HeaderCard({
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

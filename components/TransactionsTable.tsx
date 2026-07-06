@@ -1,70 +1,70 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { money, dateLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { TransactionWithCategory } from "@/lib/queries";
 
 export function TransactionsTable({ transactions }: { transactions: TransactionWithCategory[] }) {
   if (transactions.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface px-5 py-6 text-sm text-muted">
-        No transactions recorded yet.
-      </div>
+      <Card className="px-5 py-6 text-sm text-muted-foreground">No transactions recorded yet.</Card>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border bg-surface">
-      <div className="border-b border-border px-5 py-3">
+    <Card className="gap-0 p-0">
+      <div className="border-b px-5 py-3">
         <h2 className="font-medium">Transactions</h2>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted">
-              <th className="px-5 py-2 font-medium">Date</th>
-              <th className="px-5 py-2 font-medium">Category</th>
-              <th className="px-5 py-2 font-medium">Description</th>
-              <th className="px-5 py-2 text-right font-medium">Amount</th>
-              <th className="px-5 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t) => {
-              const income = t.transaction_categories?.direction === "income";
-              return (
-                <tr key={t.id} className="border-t border-border align-top">
-                  <td className="whitespace-nowrap px-5 py-2 text-muted">{dateLabel(t.txn_date)}</td>
-                  <td className="whitespace-nowrap px-5 py-2">
-                    {t.transaction_categories?.label ?? t.category}
-                    {t.is_estimate && (
-                      <Badge variant="neutral" className="ml-2">
-                        Est.
-                      </Badge>
-                    )}
-                  </td>
-                  <td className="px-5 py-2 text-muted">{t.description}</td>
-                  <td
-                    className={`whitespace-nowrap px-5 py-2 text-right tabular-nums ${
-                      income ? "text-positive" : "text-ink"
-                    }`}
+      <Table className="min-w-[640px]">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="pl-5">Date</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="pr-5" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((t) => {
+            const income = t.transaction_categories?.direction === "income";
+            return (
+              <TableRow key={t.id}>
+                <TableCell className="pl-5 text-muted-foreground">{dateLabel(t.txn_date)}</TableCell>
+                <TableCell>
+                  {t.transaction_categories?.label ?? t.category}
+                  {t.is_estimate && (
+                    <Badge variant="outline" className="ml-2">
+                      Est.
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground">{t.description}</TableCell>
+                <TableCell
+                  className={cn(
+                    "text-right font-mono tabular-nums",
+                    income ? "text-positive" : "text-foreground",
+                  )}
+                >
+                  {income ? "+" : "−"}
+                  {money(t.amount_cents)}
+                </TableCell>
+                <TableCell className="pr-5 text-right">
+                  <Link
+                    href={`/properties/${t.property_id}/transactions/${t.id}`}
+                    className="text-sm font-medium text-primary hover:underline"
                   >
-                    {income ? "+" : "−"}
-                    {money(t.amount_cents)}
-                  </td>
-                  <td className="whitespace-nowrap px-5 py-2 text-right">
-                    <Link
-                      href={`/properties/${t.property_id}/transactions/${t.id}`}
-                      className="text-sm text-brand"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                    View
+                  </Link>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }

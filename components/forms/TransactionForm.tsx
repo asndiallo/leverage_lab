@@ -2,10 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";
+import { Plus } from "lucide-react";
 import { addTransaction } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
-import { Field, SubmitButton, inputClass } from "./formPrimitives";
+import { Field, SubmitButton } from "./formPrimitives";
+import { FormDialog } from "./FormDialog";
 import { CategorySelect, type CategoryOption } from "./CategorySelect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function TransactionForm({
   propertyId,
@@ -25,52 +31,57 @@ export function TransactionForm({
     }
   }, [state]);
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="rounded-lg border border-border px-3 py-1.5 text-sm hover:border-brand"
-      >
-        + Add transaction
-      </button>
-    );
-  }
-
   return (
-    <form ref={ref} action={action} className="space-y-3 rounded-xl border border-border bg-surface p-5">
-      <h3 className="font-medium">New transaction</h3>
-      <input type="hidden" name="property_id" value={propertyId} />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Date">
-          <input name="txn_date" type="date" required className={inputClass} />
-        </Field>
-        <Field label="Category">
-          <CategorySelect categories={categories} />
-        </Field>
-        <Field label="Amount ($)">
-          <input name="amount" type="number" step="0.01" min="0" required className={inputClass} />
-        </Field>
-        <Field label="Paid by">
-          <select name="paid_by" defaultValue="owner" className={inputClass}>
-            <option value="owner">owner</option>
-            <option value="seller">seller</option>
-            <option value="tenant">tenant</option>
-          </select>
-        </Field>
-        <Field label="Description">
-          <input name="description" className={inputClass} />
-        </Field>
-      </div>
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input type="checkbox" name="is_estimate" /> This is an estimate (projected, not actual)
-      </label>
-      {state.error && <p className="text-sm text-negative">{state.error}</p>}
-      <div className="flex items-center gap-3">
-        <SubmitButton label="Add transaction" />
-        <button type="button" onClick={() => setOpen(false)} className="text-sm text-muted">
-          Cancel
-        </button>
-      </div>
-    </form>
+    <FormDialog
+      open={open}
+      onOpenChange={setOpen}
+      title="New transaction"
+      trigger={
+        <Button variant="outline">
+          <Plus className="size-4" />
+          Add transaction
+        </Button>
+      }
+    >
+      <form ref={ref} action={action} className="space-y-4">
+        <input type="hidden" name="property_id" value={propertyId} />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Date">
+            <Input name="txn_date" type="date" required />
+          </Field>
+          <Field label="Category">
+            <CategorySelect categories={categories} />
+          </Field>
+          <Field label="Amount ($)">
+            <Input name="amount" type="number" step="0.01" min="0" required />
+          </Field>
+          <Field label="Paid by">
+            <Select name="paid_by" defaultValue="owner">
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="owner">owner</SelectItem>
+                <SelectItem value="seller">seller</SelectItem>
+                <SelectItem value="tenant">tenant</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Description" className="sm:col-span-2">
+            <Input name="description" />
+          </Field>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Checkbox name="is_estimate" /> This is an estimate (projected, not actual)
+        </label>
+        {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+        <div className="flex items-center justify-end gap-3">
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <SubmitButton label="Add transaction" />
+        </div>
+      </form>
+    </FormDialog>
   );
 }

@@ -1,3 +1,13 @@
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { money, taxRatePer100 } from "@/lib/format";
 import { HomesteadToggle } from "@/components/HomesteadToggle";
 import type { TaxBreakdownRow } from "@/types/database";
@@ -21,44 +31,50 @@ export function TaxBreakdown({
   const savings = annualTaxCents - withHomesteadCents;
 
   return (
-    <div className="rounded-xl border border-border bg-surface">
-      <div className="border-b border-border px-5 py-3">
+    <Card className="gap-0 p-0">
+      <div className="border-b px-5 py-3">
         <h2 className="font-medium">Property tax{year ? ` — ${year}` : ""}</h2>
-        <p className="text-xs text-muted">Guadalupe County · multi-jurisdiction</p>
+        <p className="text-xs text-muted-foreground">Guadalupe County · multi-jurisdiction</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted">
-              <th className="px-5 py-2 font-medium">Jurisdiction</th>
-              <th className="px-5 py-2 text-right font-medium">Rate /$100</th>
-              <th className="px-5 py-2 text-right font-medium">Taxable</th>
-              <th className="px-5 py-2 text-right font-medium">Tax</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.jurisdiction_id} className="border-t border-border">
-                <td className="px-5 py-2">{r.name}</td>
-                <td className="px-5 py-2 text-right tabular-nums">{taxRatePer100(r.rate)}</td>
-                <td className="px-5 py-2 text-right tabular-nums">{money(r.taxable_cents)}</td>
-                <td className="px-5 py-2 text-right tabular-nums">{money(r.tax_cents)}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-border font-semibold">
-              <td className="px-5 py-2" colSpan={3}>
-                Total
-              </td>
-              <td className="px-5 py-2 text-right tabular-nums">{money(total)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <Table className="min-w-[520px]">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="pl-5">Jurisdiction</TableHead>
+            <TableHead className="text-right">Rate /$100</TableHead>
+            <TableHead className="text-right">Taxable</TableHead>
+            <TableHead className="pr-5 text-right">Tax</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.jurisdiction_id}>
+              <TableCell className="pl-5">{r.name}</TableCell>
+              <TableCell className="text-right font-mono tabular-nums">
+                {taxRatePer100(r.rate)}
+              </TableCell>
+              <TableCell className="text-right font-mono tabular-nums">
+                {money(r.taxable_cents)}
+              </TableCell>
+              <TableCell className="pr-5 text-right font-mono tabular-nums">
+                {money(r.tax_cents)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow className="hover:bg-transparent">
+            <TableCell className="pl-5 font-semibold" colSpan={3}>
+              Total
+            </TableCell>
+            <TableCell className="pr-5 text-right font-mono font-semibold tabular-nums">
+              {money(total)}
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3 text-xs">
-        <div className="text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3 text-xs">
+        <div className="text-muted-foreground">
           Homestead{" "}
           {homesteadFiled ? (
             <span className="font-medium text-positive">filed</span>
@@ -71,6 +87,6 @@ export function TaxBreakdown({
         </div>
         <HomesteadToggle propertyId={propertyId} filed={homesteadFiled} />
       </div>
-    </div>
+    </Card>
   );
 }

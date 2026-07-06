@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "@/components/SignOutButton";
+import { NavLinks } from "@/components/NavLinks";
+import { MobileNav } from "@/components/MobileNav";
 
 export default async function AppLayout({
   children,
@@ -16,28 +18,29 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+      <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-6">
-            <Link href="/" className="font-semibold tracking-tight">
-              Leverage Lab
+            <MobileNav email={user.email ?? ""} />
+            <Link href="/" className="flex items-center gap-2">
+              <span className="flex size-6 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+                LL
+              </span>
+              <span className="hidden font-semibold tracking-tight sm:inline">Leverage Lab</span>
             </Link>
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/" className="text-muted hover:text-ink">
-                Portfolio
-              </Link>
-              <Link href="/documents" className="text-muted hover:text-ink">
-                Documents
-              </Link>
-            </nav>
+            <NavLinks className="hidden sm:flex" />
           </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden text-sm text-muted sm:inline">{user.email}</span>
-            <SignOutButton />
+          <div className="flex items-center gap-3">
+            <span className="hidden font-mono text-xs text-muted-foreground md:inline">
+              {user.email}
+            </span>
+            <div className="hidden sm:block">
+              <SignOutButton />
+            </div>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
     </div>
   );
 }

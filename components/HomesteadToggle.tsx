@@ -3,6 +3,7 @@
 import { useFormState } from "react-dom";
 import { setHomesteadFiled } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
+import { Button } from "@/components/ui/button";
 
 export function HomesteadToggle({
   propertyId,
@@ -16,9 +17,9 @@ export function HomesteadToggle({
     <form action={action}>
       <input type="hidden" name="property_id" value={propertyId} />
       <input type="hidden" name="filed" value={filed ? "false" : "true"} />
-      <button className="whitespace-nowrap rounded-md border border-border px-2 py-1 text-xs hover:border-brand">
+      <Button type="submit" variant="outline" size="sm" className="whitespace-nowrap">
         {filed ? "Mark as not filed" : "Mark homestead filed"}
-      </button>
+      </Button>
     </form>
   );
 }

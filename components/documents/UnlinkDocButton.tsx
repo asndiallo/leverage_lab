@@ -3,6 +3,7 @@
 import { useFormState } from "react-dom";
 import { unlinkDocument } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
+import { Button } from "@/components/ui/button";
 
 export function UnlinkDocButton({
   linkId,
@@ -19,7 +20,9 @@ export function UnlinkDocButton({
       <input type="hidden" name="link_id" value={linkId} />
       <input type="hidden" name="property_id" value={propertyId} />
       <input type="hidden" name="transaction_id" value={transactionId} />
-      <button className="text-xs text-muted hover:text-negative">Unlink</button>
+      <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+        Unlink
+      </Button>
     </form>
   );
 }

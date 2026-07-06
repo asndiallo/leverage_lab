@@ -1,40 +1,124 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --canvas: 249 250 251;   /* gray-50  */
-  --surface: 255 255 255;  /* white    */
-  --border: 229 231 235;   /* gray-200 */
-  --ink: 17 24 39;         /* gray-900 */
-  --muted: 107 114 128;    /* gray-500 */
-  --brand: 37 99 235;      /* blue-600 */
-  --positive: 22 163 74;   /* green-600 */
-  --negative: 220 38 38;   /* red-600  */
-  --warn: 217 119 6;       /* amber-600 */
+/*
+ * Font stack is hard-coded (not `var(--font-geist-sans)`) because Tailwind's
+ * `@theme inline` resolves custom properties at CSS-build time, before
+ * next/font's runtime variable (set via a class on <html>) exists. The
+ * `geist` package registers the literal families "Geist" / "Geist Mono",
+ * so referencing them by name here is safe and keeps this block static.
+ */
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Financial semantics: gains, losses, and caution/estimate states. */
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-negative: var(--negative);
+  --color-negative-foreground: var(--negative-foreground);
+  --color-warn: var(--warn);
+  --color-warn-foreground: var(--warn-foreground);
+
+  --radius-xs: calc(var(--radius) * 0.5);
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: calc(var(--radius) * 0.875);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
 }
 
+:root {
+  --background: var(--color-slate-50);
+  --foreground: var(--color-slate-900);
+  --card: var(--color-white);
+  --card-foreground: var(--color-slate-900);
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-slate-900);
+  --primary: var(--color-blue-600);
+  --primary-foreground: var(--color-white);
+  --secondary: var(--color-slate-100);
+  --secondary-foreground: var(--color-slate-900);
+  --muted: var(--color-slate-100);
+  --muted-foreground: var(--color-slate-500);
+  --accent: var(--color-slate-100);
+  --accent-foreground: var(--color-slate-900);
+  --destructive: var(--color-rose-600);
+  --destructive-foreground: var(--color-white);
+  --border: var(--color-slate-200);
+  --input: var(--color-slate-200);
+  --ring: var(--color-blue-500);
+
+  --positive: var(--color-emerald-600);
+  --positive-foreground: var(--color-white);
+  --negative: var(--color-rose-600);
+  --negative-foreground: var(--color-white);
+  --warn: var(--color-amber-600);
+  --warn-foreground: var(--color-white);
+
+  --radius: 0.75rem;
+}
+
+/* System dark mode — no toggle/JS, matches OS preference (Tailwind's
+   default `dark:` variant already keys off this same media query). */
 @media (prefers-color-scheme: dark) {
   :root {
-    --canvas: 17 24 39;      /* gray-900 */
-    --surface: 31 41 55;     /* gray-800 */
-    --border: 55 65 81;      /* gray-700 */
-    --ink: 243 244 246;      /* gray-100 */
-    --muted: 156 163 175;    /* gray-400 */
-    --brand: 96 165 250;     /* blue-400 */
-    --positive: 74 222 128;  /* green-400 */
-    --negative: 248 113 113; /* red-400  */
-    --warn: 251 191 36;      /* amber-400 */
+    --background: var(--color-slate-950);
+    --foreground: var(--color-slate-100);
+    --card: var(--color-slate-900);
+    --card-foreground: var(--color-slate-100);
+    --popover: var(--color-slate-900);
+    --popover-foreground: var(--color-slate-100);
+    --primary: var(--color-blue-500);
+    --primary-foreground: var(--color-white);
+    --secondary: var(--color-slate-800);
+    --secondary-foreground: var(--color-slate-100);
+    --muted: var(--color-slate-800);
+    --muted-foreground: var(--color-slate-400);
+    --accent: var(--color-slate-800);
+    --accent-foreground: var(--color-slate-100);
+    --destructive: var(--color-rose-500);
+    --destructive-foreground: var(--color-white);
+    --border: var(--color-slate-800);
+    --input: var(--color-slate-800);
+    --ring: var(--color-blue-400);
+
+    --positive: var(--color-emerald-500);
+    --positive-foreground: var(--color-white);
+    --negative: var(--color-rose-500);
+    --negative-foreground: var(--color-white);
+    --warn: var(--color-amber-500);
+    --warn-foreground: var(--color-white);
   }
 }
 
-body {
-  background-color: rgb(var(--canvas));
-  color: rgb(var(--ink));
-}
-
-/* Estimate (not-a-fact) treatment — used wherever is_estimate/projected is true. */
-.is-estimate {
-  border-style: dashed;
-  opacity: 0.9;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import {
   getProperty,
@@ -10,7 +11,9 @@ import {
   getSignedUrlMap,
 } from "@/lib/queries";
 import { money, dateLabel } from "@/lib/format";
-import { Badge } from "@/components/ui/Badge";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { EditTransactionForm } from "@/components/forms/EditTransactionForm";
 import { DocumentUpload } from "@/components/documents/DocumentUpload";
 import { DocumentPreview } from "@/components/documents/DocumentPreview";
@@ -45,34 +48,43 @@ export default async function TransactionPage({
 
   return (
     <div className="space-y-6">
-      <Link href={`/properties/${params.id}`} className="text-sm text-muted hover:text-ink">
-        ← {property.address}
+      <Link
+        href={`/properties/${params.id}`}
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        {property.address}
       </Link>
 
-      <div className="rounded-xl border border-border bg-surface p-6">
+      <Card className="p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Badge>{txn.transaction_categories?.label ?? txn.category}</Badge>
-              {txn.is_estimate && <Badge variant="neutral">Est.</Badge>}
+              <Badge variant="outline">{txn.transaction_categories?.label ?? txn.category}</Badge>
+              {txn.is_estimate && <Badge variant="outline">Est.</Badge>}
             </div>
-            <h1 className="mt-2 text-xl font-semibold">
+            <h1 className="mt-2 text-xl font-semibold tracking-tight">
               {txn.description || txn.transaction_categories?.label || "Transaction"}
             </h1>
-            <p className="text-sm text-muted">
+            <p className="text-sm text-muted-foreground">
               {dateLabel(txn.txn_date)} · paid by {txn.paid_by}
             </p>
           </div>
-          <div className={`text-2xl font-semibold tabular-nums ${income ? "text-positive" : "text-ink"}`}>
+          <div
+            className={cn(
+              "font-mono text-2xl font-semibold tabular-nums",
+              income ? "text-positive" : "text-foreground",
+            )}
+          >
             {income ? "+" : "−"}
             {money(txn.amount_cents)}
           </div>
         </div>
-        {txn.notes && <p className="mt-3 text-sm text-muted">{txn.notes}</p>}
+        {txn.notes && <p className="mt-3 text-sm text-muted-foreground">{txn.notes}</p>}
         <div className="mt-4">
           <EditTransactionForm txn={txn} categories={categories} />
         </div>
-      </div>
+      </Card>
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -92,7 +104,7 @@ export default async function TransactionPage({
           </div>
         </div>
         {linked.length === 0 ? (
-          <p className="text-sm text-muted">No documents linked to this transaction yet.</p>
+          <p className="text-sm text-muted-foreground">No documents linked to this transaction yet.</p>
         ) : (
           <div className="space-y-4">
             {linked.map(({ link_id, doc }) => (
@@ -116,9 +128,9 @@ export default async function TransactionPage({
       {unlinked.length > 0 && (
         <section className="space-y-3">
           <h2 className="font-medium">Other property documents</h2>
-          <div className="rounded-xl border border-border bg-surface p-4">
+          <Card className="p-4">
             <DocumentList docs={unlinked} urlMap={urlMap} />
-          </div>
+          </Card>
         </section>
       )}
     </div>
