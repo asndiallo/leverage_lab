@@ -45,12 +45,46 @@ the seed scripts as needed.
 
 ## Scripts
 
-| Command          | Description          |
-| ---------------- | -------------------- |
-| `pnpm dev`       | Start the dev server |
-| `pnpm build`     | Production build     |
-| `pnpm lint`      | ESLint               |
-| `pnpm typecheck` | `tsc --noEmit`       |
+| Command           | Description                  |
+| ----------------- | ---------------------------- |
+| `pnpm dev`        | Start the dev server         |
+| `pnpm build`      | Production build             |
+| `pnpm lint`       | ESLint                       |
+| `pnpm typecheck`  | `tsc --noEmit`               |
+| `pnpm test`       | Run the full test suite once |
+| `pnpm test:watch` | Run tests in watch mode      |
+
+## Testing
+
+Vitest, with three kinds of coverage:
+
+- **`tests/unit/`** — pure TypeScript logic (`lib/format.ts`). No dependencies.
+- **`tests/db/`** — the Postgres layer itself: mortgage math, the Texas
+  multi-jurisdiction tax engine (exemption clamping, homestead), cashflow
+  projections, the yields view, and the multi-owner RLS/invite model. These
+  call the real SQL functions/RLS policies via `@supabase/supabase-js`
+  against your **local** `supabase start` stack — nothing is mocked, so a bug
+  in a migration shows up as a failing test, not just a wrong number in the UI.
+- **`tests/actions/`** — the Server Actions in `lib/actions.ts`, exercised
+  end-to-end (validation → real DB write → real RLS) by mocking `next/headers`
+  and `next/cache` (see `tests/setup/mockNext.ts`) so a real signed-in
+  Supabase session can flow through `lib/supabase/server.ts` outside of an
+  actual Next.js request.
+
+Every DB-backed test creates its own throwaway auth user(s) and property via
+the Supabase service-role key, and tears them down afterward — tests don't
+depend on or mutate the seeded 117 Willow Cove data, so they're safe to run
+against your regular dev stack.
+
+```bash
+supabase start   # tests need the local stack up
+pnpm test
+```
+
+Component rendering tests are intentionally out of scope for now — most
+components here are thin server-rendered wrappers around already-tested
+data/formatting, so the DB and Server Action layers are where bugs actually
+hide.
 
 ## Project structure
 
