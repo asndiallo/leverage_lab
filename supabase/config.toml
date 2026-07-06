@@ -159,10 +159,12 @@ enabled = true
 site_url = "https://leveragelab-delta.vercel.app"
 # A list of *exact* URLs (or wildcard patterns) that auth providers are permitted to redirect to
 # post authentication. Every emailRedirectTo/redirectTo the app passes must match one of these, or
-# Supabase silently falls back to site_url instead of honoring it.
+# Supabase silently falls back to site_url instead of honoring it. A bare origin only matches that
+# exact string with no path — it does NOT match "<origin>/auth/confirm" — so every entry needs a
+# trailing "/**" to cover the app's actual redirect paths (/auth/confirm, /reset-password, etc.).
 additional_redirect_urls = [
-  "http://127.0.0.1:3000",
-  "https://leveragelab-delta.vercel.app",
+  "http://127.0.0.1:3000/**",
+  "https://leveragelab-delta.vercel.app/**",
   "https://*-assane-diallos-projects.vercel.app/**",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).

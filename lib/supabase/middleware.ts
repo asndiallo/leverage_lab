@@ -34,10 +34,12 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPublic = path === "/login" || path.startsWith("/auth");
 
-  // Unauthenticated → send to login (except on public routes).
+  // Unauthenticated → send to login (except on public routes). Clear the query
+  // string so stray params (e.g. a leftover OAuth `code`) never ride along.
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.search = "";
     return NextResponse.redirect(url);
   }
   // Authenticated visiting login → send home.
