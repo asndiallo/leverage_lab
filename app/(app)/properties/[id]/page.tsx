@@ -12,6 +12,7 @@ import {
   getCashflowRange,
   getTransactions,
   getCategories,
+  getVacancyPeriods,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
@@ -24,11 +25,23 @@ import { TransactionForm } from "@/components/forms/TransactionForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function PropertyPage({ params }: { params: { id: string } }) {
+const HORIZONS = [12, 24, 60];
+
+export default async function PropertyPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { horizon?: string };
+}) {
   const property = await getProperty(params.id);
   if (!property) notFound();
 
-  const [loans, loanPayments, yields, taxBasisCents, taxYear, transactions, categories] =
+  const horizon = HORIZONS.includes(Number(searchParams.horizon))
+    ? Number(searchParams.horizon)
+    : 12;
+
+  const [loans, loanPayments, yields, taxBasisCents, taxYear, transactions, categories, vacancyPeriods] =
     await Promise.all([
       getLoans(params.id),
       getLoanPayments(params.id),
@@ -37,6 +50,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
       getLatestTaxRateYear(params.id),
       getTransactions(params.id),
       getCategories(),
+      getVacancyPeriods(params.id),
     ]);
 
   const loan = loans.find((l) => l.status === "active") ?? loans[0] ?? null;
@@ -53,7 +67,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
 
   const [escrow, cashflow, taxBreakdown] = await Promise.all([
     getCurrentEscrow(params.id, startMonth),
-    getCashflowRange(params.id, startMonth, 12),
+    getCashflowRange(params.id, startMonth, horizon),
     taxYear ? getTaxBreakdown(params.id, taxYear) : Promise.resolve([]),
   ]);
 
@@ -82,7 +96,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
         <TransactionForm propertyId={params.id} categories={categories} />
       </div>
 
-      <CashflowStrip rows={cashflow} />
+      <CashflowStrip rows={cashflow} horizon={horizon} vacancyPeriods={vacancyPeriods} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TaxBreakdown rows={taxBreakdown} year={taxYear} />

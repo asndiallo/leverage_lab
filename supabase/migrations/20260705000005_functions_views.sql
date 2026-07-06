@@ -306,14 +306,13 @@ with rent as (
   group by l.property_id
 ),
 invested as (
-  -- Total cash the owner actually put in. Works for both a conventional
-  -- down-payment loan (loan < price) AND a VA/financed loan (loan > price, where
-  -- the excess loan finances closing costs). Derivation:
-  --   price + your closing costs  (everything you owe)
-  --   - original loan             (what financing covers, incl. any excess)
-  --   - seller + borrower credits  (what others cover)
-  --   = deposit + cash-to-close + costs paid before closing.
-  -- For 117 Willow Cove this yields $4,528.01, matching the CD.
+  -- Total cash the owner has put in = cash-to-close + later capital improvements.
+  --   cash-to-close = price + owner closing costs - original loan - credits
+  --     (works for a conventional down payment AND a VA/financed loan where the
+  --      excess loan finances closing costs; for 117 Willow Cove this is $4,528.01)
+  --   + owner-paid capital improvements added after closing (always additive)
+  -- Operating expenses are NOT here — they flow through monthly cash flow, not
+  -- the invested base, so cash-on-cash stays meaningful.
   select
     p.id as property_id,
     greatest(
@@ -333,7 +332,13 @@ invested as (
           select sum(t.amount_cents) from transactions t
           where t.property_id = p.id and t.category in ('seller_credit', 'borrower_credit')
         ), 0),
-      0) as total_cash_invested_cents
+      0)
+    + coalesce((
+        select sum(t.amount_cents) from transactions t
+        join transaction_categories c on c.code = t.category
+        where t.property_id = p.id
+          and c.category_group = 'capital_improvement' and t.paid_by = 'owner'
+      ), 0) as total_cash_invested_cents
   from properties p
 ),
 ttm as (

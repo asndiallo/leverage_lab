@@ -74,6 +74,19 @@ export async function getPropertyYields(id: string): Promise<PropertyYields | nu
   return data;
 }
 
+export async function getVacancyPeriods(
+  id: string,
+): Promise<import("@/types/database").VacancyPeriod[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("vacancy_periods")
+    .select("*")
+    .eq("property_id", id)
+    .order("start_date", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getLoans(id: string): Promise<Loan[]> {
   const supabase = createClient();
   const { data, error } = await supabase
