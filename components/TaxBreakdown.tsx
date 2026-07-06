@@ -1,8 +1,25 @@
 import { money, taxRatePer100 } from "@/lib/format";
+import { HomesteadToggle } from "@/components/HomesteadToggle";
 import type { TaxBreakdownRow } from "@/types/database";
 
-export function TaxBreakdown({ rows, year }: { rows: TaxBreakdownRow[]; year: number | null }) {
+export function TaxBreakdown({
+  rows,
+  year,
+  propertyId,
+  annualTaxCents,
+  withHomesteadCents,
+  homesteadFiled,
+}: {
+  rows: TaxBreakdownRow[];
+  year: number | null;
+  propertyId: string;
+  annualTaxCents: number;
+  withHomesteadCents: number;
+  homesteadFiled: boolean;
+}) {
   const total = rows.reduce((s, r) => s + r.tax_cents, 0);
+  const savings = annualTaxCents - withHomesteadCents;
+
   return (
     <div className="rounded-xl border border-border bg-surface">
       <div className="border-b border-border px-5 py-3">
@@ -39,11 +56,21 @@ export function TaxBreakdown({ rows, year }: { rows: TaxBreakdownRow[]; year: nu
           </tfoot>
         </table>
       </div>
-      <p className="border-t border-border px-5 py-3 text-xs text-muted">
-        Homestead not yet filed — you plan to apply after closing. Once filed, the SCUCISD $140K,
-        City $5K, County 1% (min $5K), and Lateral Roads 1%+$3K exemptions take effect for tax year
-        2027.
-      </p>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3 text-xs">
+        <div className="text-muted">
+          Homestead{" "}
+          {homesteadFiled ? (
+            <span className="font-medium text-positive">filed</span>
+          ) : (
+            "not yet filed"
+          )}{" "}
+          · effective TY2027. Projected savings once active:{" "}
+          <span className="font-medium text-positive">{money(savings)}/yr</span> (~
+          {money(withHomesteadCents)} vs {money(annualTaxCents)}).
+        </div>
+        <HomesteadToggle propertyId={propertyId} filed={homesteadFiled} />
+      </div>
     </div>
   );
 }

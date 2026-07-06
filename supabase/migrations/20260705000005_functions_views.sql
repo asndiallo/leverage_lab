@@ -466,3 +466,50 @@ as $$
   where j.property_id = p_property_id
   order by tax_cents desc;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- property_tax_with_homestead_cents — projected annual tax if the property's
+-- homestead exemptions were ACTIVE, ignoring the applied/effective-year filters.
+-- Lets the UI show "how much would filing homestead save?" for any rate year,
+-- independent of whether/when it is actually filed.
+-- ---------------------------------------------------------------------------
+create or replace function property_tax_with_homestead_cents(
+  p_property_id uuid,
+  p_tax_year    integer
+) returns bigint
+language sql stable
+as $$
+  with av as (
+    select coalesce(capped_assessed_cents, total_assessed_cents) as base_cents
+    from assessed_values
+    where property_id = p_property_id and tax_year = p_tax_year
+    order by (source = 'county_record') desc, recorded_at desc
+    limit 1
+  ),
+  active_ex as (
+    select distinct on (e.jurisdiction_id)
+      e.jurisdiction_id, e.flat_amount_cents, e.percent, e.min_amount_cents, e.max_amount_cents
+    from tax_exemptions e
+    where e.property_id = p_property_id and e.exemption_type = 'homestead'
+    order by e.jurisdiction_id, e.effective_tax_year desc
+  ),
+  ex_per_j as (
+    select x.jurisdiction_id,
+      greatest(
+        least(
+          coalesce(x.flat_amount_cents, 0)
+            + round((select base_cents from av) * coalesce(x.percent, 0))::bigint,
+          coalesce(x.max_amount_cents, 9223372036854775807)
+        ),
+        coalesce(x.min_amount_cents, 0)
+      ) as exemption_cents
+    from active_ex x
+  )
+  select coalesce(sum(
+    round(greatest((select base_cents from av) - coalesce(x.exemption_cents, 0), 0) * r.rate)
+  )::bigint, 0)
+  from taxing_jurisdictions j
+  join tax_rates r on r.jurisdiction_id = j.id and r.tax_year = p_tax_year
+  left join ex_per_j x on x.jurisdiction_id = j.id
+  where j.property_id = p_property_id;
+$$;

@@ -164,6 +164,30 @@ export async function getTaxBreakdown(id: string, year: number): Promise<TaxBrea
   return data ?? [];
 }
 
+export async function getHomesteadStatus(
+  id: string,
+): Promise<{ filed: boolean; count: number }> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("tax_exemptions")
+    .select("applied")
+    .eq("property_id", id)
+    .eq("exemption_type", "homestead");
+  if (error) throw error;
+  const rows = data ?? [];
+  return { filed: rows.length > 0 && rows.every((r) => r.applied), count: rows.length };
+}
+
+export async function getTaxWithHomesteadCents(id: string, year: number): Promise<number> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("property_tax_with_homestead_cents", {
+    p_property_id: id,
+    p_tax_year: year,
+  });
+  if (error) throw error;
+  return (data as number) ?? 0;
+}
+
 export async function getTaxBasisCents(id: string): Promise<number> {
   const supabase = createClient();
   const { data, error } = await supabase.rpc("property_tax_basis_cents", { p_property_id: id });

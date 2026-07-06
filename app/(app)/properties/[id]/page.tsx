@@ -13,6 +13,8 @@ import {
   getTransactions,
   getCategories,
   getVacancyPeriods,
+  getHomesteadStatus,
+  getTaxWithHomesteadCents,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
@@ -53,6 +55,8 @@ export default async function PropertyPage({
       getVacancyPeriods(params.id),
     ]);
 
+  const homestead = await getHomesteadStatus(params.id);
+
   const loan = loans.find((l) => l.status === "active") ?? loans[0] ?? null;
   const loanPayment = loanPayments.find((p) => p.loan_id === loan?.id) ?? loanPayments[0] ?? null;
 
@@ -65,10 +69,11 @@ export default async function PropertyPage({
     ? laterMonthISO(firstOfMonthISO(new Date()), firstOfMonthISO(firstPay))
     : firstOfMonthISO(new Date());
 
-  const [escrow, cashflow, taxBreakdown] = await Promise.all([
+  const [escrow, cashflow, taxBreakdown, withHomesteadCents] = await Promise.all([
     getCurrentEscrow(params.id, startMonth),
     getCashflowRange(params.id, startMonth, horizon),
     taxYear ? getTaxBreakdown(params.id, taxYear) : Promise.resolve([]),
+    taxYear ? getTaxWithHomesteadCents(params.id, taxYear) : Promise.resolve(0),
   ]);
 
   const annualTaxCents = taxBreakdown.reduce((s, r) => s + r.tax_cents, 0);
@@ -99,7 +104,14 @@ export default async function PropertyPage({
       <CashflowStrip rows={cashflow} horizon={horizon} vacancyPeriods={vacancyPeriods} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <TaxBreakdown rows={taxBreakdown} year={taxYear} />
+        <TaxBreakdown
+          rows={taxBreakdown}
+          year={taxYear}
+          propertyId={params.id}
+          annualTaxCents={annualTaxCents}
+          withHomesteadCents={withHomesteadCents}
+          homesteadFiled={homestead.filed}
+        />
         <TransactionsTable transactions={transactions} />
       </div>
     </div>

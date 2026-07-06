@@ -595,6 +595,10 @@ export interface Database {
         Args: { p_property_id: string; p_tax_year: number };
         Returns: TaxBreakdownRow[];
       };
+      property_tax_with_homestead_cents: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: number;
+      };
     };
   };
 }

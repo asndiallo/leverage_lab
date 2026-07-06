@@ -71,6 +71,7 @@ grant execute on function property_tax_basis_cents(uuid)                 to auth
 grant execute on function property_monthly_cashflow(uuid, date)          to authenticated;
 grant execute on function property_cashflow_range(uuid, date, integer)   to authenticated;
 grant execute on function property_tax_breakdown(uuid, integer)          to authenticated;
+grant execute on function property_tax_with_homestead_cents(uuid, integer) to authenticated;
 
 alter default privileges in schema public
   grant select, insert, update, delete on tables to authenticated;

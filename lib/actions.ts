@@ -193,6 +193,32 @@ export async function deleteTransaction(
 }
 
 // ---------------------------------------------------------------------------
+// Homestead — mark the property's homestead exemptions filed / not filed.
+// ---------------------------------------------------------------------------
+export async function setHomesteadFiled(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const propertyId = String(formData.get("property_id") ?? "");
+  const filed = String(formData.get("filed") ?? "") === "true";
+  const { error } = await supabase
+    .from("tax_exemptions")
+    .update({ applied: filed })
+    .eq("property_id", propertyId)
+    .eq("exemption_type", "homestead");
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${propertyId}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Documents (upload to private Storage + record row; delete removes both)
 // ---------------------------------------------------------------------------
 const BUCKET = "documents";
