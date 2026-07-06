@@ -37,6 +37,68 @@ create trigger properties_set_updated_at
   for each row execute function set_updated_at();
 
 -- ---------------------------------------------------------------------------
+-- property_members
+-- Who can see/edit a property. Starts with just the creator; co-owners (e.g. a
+-- spouse) are added via the property_invites flow below. This table — not
+-- `user_id` on each row — is what RLS (0006) checks, so every co-owner has
+-- equal, full access to everything on the property.
+-- ---------------------------------------------------------------------------
+create table property_members (
+  id          uuid primary key default gen_random_uuid(),
+  property_id uuid not null references properties(id) on delete cascade,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  invited_by  uuid references auth.users(id) on delete set null,
+  created_at  timestamptz not null default now(),
+
+  unique (property_id, user_id)
+);
+create index property_members_property_idx on property_members(property_id);
+create index property_members_user_idx on property_members(user_id);
+
+-- Every property gets its creator as a member automatically, so app code that
+-- just inserts into `properties` doesn't need to know about this table.
+create or replace function add_property_creator_as_member()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into property_members (property_id, user_id, invited_by)
+  values (new.id, new.user_id, new.user_id)
+  on conflict (property_id, user_id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger properties_after_insert_add_creator
+  after insert on properties
+  for each row execute function add_property_creator_as_member();
+
+-- ---------------------------------------------------------------------------
+-- property_invites
+-- An outstanding invite to co-own a property, by email. Accepting one (via the
+-- accept_property_invite() RPC in 0006) inserts a property_members row for
+-- whoever is signed in with the matching email — there's no separate signup
+-- step baked into the schema, since the invitee just needs an auth.users
+-- account with that email before or after the invite is created.
+-- ---------------------------------------------------------------------------
+create table property_invites (
+  id          uuid primary key default gen_random_uuid(),
+  property_id uuid not null references properties(id) on delete cascade,
+  email       text not null,
+  invited_by  uuid not null references auth.users(id) on delete cascade,
+  token       uuid not null default gen_random_uuid() unique,
+  status      invite_status not null default 'pending',
+  created_at  timestamptz not null default now(),
+  expires_at  timestamptz not null default (now() + interval '7 days'),
+  accepted_at timestamptz,
+  accepted_by uuid references auth.users(id) on delete set null
+);
+create index property_invites_property_idx on property_invites(property_id);
+create index property_invites_email_idx on property_invites(lower(email));
+
+-- ---------------------------------------------------------------------------
 -- loans
 -- One property can have multiple loans over time. `replaces_loan_id` chains a
 -- refi to the loan it paid off, so scenario modeling can show before/after

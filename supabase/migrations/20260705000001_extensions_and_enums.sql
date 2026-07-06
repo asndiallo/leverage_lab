@@ -7,10 +7,11 @@
 --     sums / capital projects can exceed that. No floating point, ever.
 --   * Rates and percentages are `numeric` fractions (0.0550 == 5.50%), NOT cents.
 --     Dollars are the only thing measured in cents.
---   * Every table carries `user_id uuid not null references auth.users`. This is
---     the ONLY way to honor "adding multi-user later needs no migration": the
---     column and its RLS policies exist from day one, defaulted to the single
---     user. Going multi-user then means handing out logins, not altering tables.
+--   * Every table still carries `user_id uuid not null references auth.users` —
+--     the CREATOR of the row, kept for provenance/audit. It is NOT the access
+--     control mechanism: a property can have multiple co-owners (e.g. a couple),
+--     tracked in `property_members` (0002), and RLS across every property-scoped
+--     table is keyed off membership there, not off this column (0006).
 --   * Every "versioned" fact (escrow, assessed value, tax rate, exemption) is
 --     append-only: you INSERT a new row with an effective date/year and never
 --     UPDATE or DELETE the prior one. The "current" value is the latest
@@ -48,6 +49,10 @@ create type property_status as enum (
   'active',    -- owned
   'sold'
 );
+
+-- A property can have co-owners (e.g. a couple). property_invites tracks an
+-- outstanding invite by email until it's accepted (or revoked/expired).
+create type invite_status as enum ('pending', 'accepted', 'revoked');
 
 create type loan_type as enum (
   'original',      -- purchase-money loan

@@ -41,44 +41,62 @@ create index document_links_transaction_idx on document_links(transaction_id);
 create index document_links_lease_idx on document_links(lease_id);
 create index document_links_user_idx on document_links(user_id);
 
--- RLS + grants (owner-scoped). Table grants also flow from the default
--- privileges set in 0006, but we grant explicitly for clarity.
+-- document_links hangs off a document, not a property, directly.
+create or replace function is_document_member(p_document_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select is_property_member(property_id)
+  from documents
+  where id = p_document_id;
+$$;
+revoke all on function is_document_member(uuid) from public;
+grant execute on function is_document_member(uuid) to authenticated;
+
+-- RLS + grants (membership-scoped, see 0006). Table grants also flow from the
+-- default privileges set in 0006, but we grant explicitly for clarity.
 alter table documents enable row level security;
 alter table documents force row level security;
-create policy documents_select on documents for select using (user_id = auth.uid());
-create policy documents_insert on documents for insert with check (user_id = auth.uid());
-create policy documents_update on documents for update using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy documents_delete on documents for delete using (user_id = auth.uid());
+create policy documents_select on documents for select using (is_property_member(property_id));
+create policy documents_insert on documents for insert with check (is_property_member(property_id));
+create policy documents_update on documents for update using (is_property_member(property_id)) with check (is_property_member(property_id));
+create policy documents_delete on documents for delete using (is_property_member(property_id));
 
 alter table document_links enable row level security;
 alter table document_links force row level security;
-create policy document_links_select on document_links for select using (user_id = auth.uid());
-create policy document_links_insert on document_links for insert with check (user_id = auth.uid());
-create policy document_links_update on document_links for update using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy document_links_delete on document_links for delete using (user_id = auth.uid());
+create policy document_links_select on document_links for select using (is_document_member(document_id));
+create policy document_links_insert on document_links for insert with check (is_document_member(document_id));
+create policy document_links_update on document_links for update using (is_document_member(document_id)) with check (is_document_member(document_id));
+create policy document_links_delete on document_links for delete using (is_document_member(document_id));
 
-grant select, insert, update, delete on documents, document_links to authenticated;
+grant select, insert, update, delete on documents, document_links to authenticated, service_role;
 
 -- ---------------------------------------------------------------------------
--- Storage: a private bucket. Objects live under {user_id}/{property_id}/... and
--- each user may only touch their own top-level folder.
+-- Storage: a private bucket. Objects live under {user_id}/{property_id}/...
+-- (the {user_id} segment is just provenance — who uploaded it — matching the
+-- `documents.storage_path` written by the app); access is keyed off the
+-- {property_id} segment via property membership, so a co-owner can read/write
+-- files a co-owner uploaded, not just their own.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
 values ('documents', 'documents', false)
 on conflict (id) do nothing;
 
-create policy "documents bucket — read own"
+create policy "documents bucket — read by property"
   on storage.objects for select to authenticated
-  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'documents' and is_property_member(((storage.foldername(name))[2])::uuid));
 
-create policy "documents bucket — insert own"
+create policy "documents bucket — insert by property"
   on storage.objects for insert to authenticated
-  with check (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+  with check (bucket_id = 'documents' and is_property_member(((storage.foldername(name))[2])::uuid));
 
-create policy "documents bucket — update own"
+create policy "documents bucket — update by property"
   on storage.objects for update to authenticated
-  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'documents' and is_property_member(((storage.foldername(name))[2])::uuid));
 
-create policy "documents bucket — delete own"
+create policy "documents bucket — delete by property"
   on storage.objects for delete to authenticated
-  using (bucket_id = 'documents' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'documents' and is_property_member(((storage.foldername(name))[2])::uuid));
