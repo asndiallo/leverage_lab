@@ -116,3 +116,8 @@ create type market_source as enum ('zillow_estimate', 'appraisal', 'manual');
 create type utility_service_type as enum (
   'electric', 'water_sewer_trash', 'internet', 'gas'
 );
+
+create type document_type as enum (
+  'receipt', 'lease', 'closing_disclosure', 'tax_document',
+  'insurance', 'statement', 'appraisal', 'other'
+);

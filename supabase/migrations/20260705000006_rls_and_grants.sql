@@ -54,3 +54,23 @@ create policy transaction_categories_read on transaction_categories
 -- Evaluate view RLS as the caller, not the view owner.
 alter view v_loan_payment     set (security_invoker = on);
 alter view v_property_yields  set (security_invoker = on);
+
+-- ---------------------------------------------------------------------------
+-- Grants. RLS restricts WHICH ROWS a user sees; the role still needs table and
+-- function access (RLS alone does not grant it). `anon` (unauthenticated) gets
+-- nothing. The default-privileges grant extends the same access to tables
+-- created in later migrations (e.g. documents).
+-- ---------------------------------------------------------------------------
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+
+grant execute on function mortgage_monthly_pi(bigint, numeric, integer)  to authenticated;
+grant execute on function property_current_escrow(uuid, date)            to authenticated;
+grant execute on function property_annual_tax_cents(uuid, integer)       to authenticated;
+grant execute on function property_tax_basis_cents(uuid)                 to authenticated;
+grant execute on function property_monthly_cashflow(uuid, date)          to authenticated;
+grant execute on function property_cashflow_range(uuid, date, integer)   to authenticated;
+grant execute on function property_tax_breakdown(uuid, integer)          to authenticated;
+
+alter default privileges in schema public
+  grant select, insert, update, delete on tables to authenticated;

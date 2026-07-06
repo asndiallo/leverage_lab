@@ -141,7 +141,6 @@ create table transactions (
 
   description   text,
   paid_by       paid_by not null default 'owner',
-  receipt_url   text,                                              -- optional Supabase Storage link
   is_estimate   boolean not null default false,                   -- projected/planned, not actual
   notes         text,
   created_at    timestamptz not null default now()
