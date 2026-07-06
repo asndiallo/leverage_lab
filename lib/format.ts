@@ -51,11 +51,20 @@ export function monthLabel(d: string | Date): string {
   return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
-/** 'YYYY-MM-DD' -> "Jul 9, 2026" */
+/** 'YYYY-MM-DD' or full ISO timestamp -> "Jul 9, 2026" */
 export function dateLabel(d: string | Date | null | undefined): string {
   if (!d) return "—";
-  const date = typeof d === "string" ? new Date(d + "T00:00:00") : d;
+  const date =
+    typeof d === "string" ? new Date(/[TZ]/.test(d) ? d : d + "T00:00:00") : d;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/** bytes -> "148 KB" */
+export function formatBytes(bytes: number | null | undefined): string {
+  if (bytes == null) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /** Date/string -> 'YYYY-MM-01' (first of that month). */

@@ -129,6 +129,112 @@ export async function addTransaction(
 }
 
 // ---------------------------------------------------------------------------
+// Documents (upload to private Storage + record row; delete removes both)
+// ---------------------------------------------------------------------------
+const BUCKET = "documents";
+const ALLOWED_MIME = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+
+const documentSchema = z.object({
+  property_id: z.string().uuid(),
+  transaction_id: z.string().uuid().optional().or(z.literal("")),
+  lease_id: z.string().uuid().optional().or(z.literal("")),
+  doc_type: z.enum([
+    "receipt",
+    "lease",
+    "closing_disclosure",
+    "tax_document",
+    "insurance",
+    "statement",
+    "appraisal",
+    "other",
+  ]),
+  title: z.string().optional().or(z.literal("")),
+});
+
+export async function uploadDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a file to upload" };
+  if (file.size > 15 * 1024 * 1024) return { error: "File exceeds 15 MB" };
+  if (file.type && !ALLOWED_MIME.includes(file.type))
+    return { error: "Only PDF or image files are allowed" };
+
+  const parsed = documentSchema.safeParse({
+    property_id: String(formData.get("property_id") ?? ""),
+    transaction_id: String(formData.get("transaction_id") ?? ""),
+    lease_id: String(formData.get("lease_id") ?? ""),
+    doc_type: String(formData.get("doc_type") ?? "other"),
+    title: String(formData.get("title") ?? ""),
+  });
+  if (!parsed.success) return { error: firstError(parsed.error) };
+  const v = parsed.data;
+
+  const id = crypto.randomUUID();
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const path = `${user.id}/${v.property_id}/${id}-${safeName}`;
+
+  const { error: upErr } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, { contentType: file.type || undefined, upsert: false });
+  if (upErr) return { error: upErr.message };
+
+  const { error: dErr } = await supabase.from("documents").insert({
+    id,
+    user_id: user.id,
+    property_id: v.property_id,
+    transaction_id: v.transaction_id || null,
+    lease_id: v.lease_id || null,
+    storage_path: path,
+    file_name: file.name,
+    mime_type: file.type || null,
+    size_bytes: file.size,
+    doc_type: v.doc_type,
+    title: v.title || file.name,
+  });
+  if (dErr) {
+    await supabase.storage.from(BUCKET).remove([path]); // roll back the upload
+    return { error: dErr.message };
+  }
+
+  revalidatePath("/documents");
+  revalidatePath(`/properties/${v.property_id}`);
+  if (v.transaction_id) revalidatePath(`/properties/${v.property_id}/transactions/${v.transaction_id}`);
+  return { ok: true };
+}
+
+export async function deleteDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const id = String(formData.get("document_id") ?? "");
+  const { data: doc, error: fErr } = await supabase
+    .from("documents")
+    .select("storage_path, property_id, transaction_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (fErr) return { error: fErr.message };
+  if (!doc) return { error: "Document not found" };
+
+  await supabase.storage.from(BUCKET).remove([doc.storage_path]);
+  const { error: dErr } = await supabase.from("documents").delete().eq("id", id);
+  if (dErr) return { error: dErr.message };
+
+  revalidatePath("/documents");
+  revalidatePath(`/properties/${doc.property_id}`);
+  if (doc.transaction_id)
+    revalidatePath(`/properties/${doc.property_id}/transactions/${doc.transaction_id}`);
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // New property (+ its purchase loan, escrow, and default settings)
 // ---------------------------------------------------------------------------
 const propertySchema = z.object({

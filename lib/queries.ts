@@ -9,7 +9,12 @@ import type {
   Transaction,
   CategoryGroup,
   TransactionDirection,
+  DocumentRecord,
 } from "@/types/database";
+
+export type DocumentWithProperty = DocumentRecord & {
+  properties: { address: string; city: string; state: string } | null;
+};
 
 // A transaction joined to its category metadata (group/direction/label).
 export type TransactionWithCategory = Transaction & {
@@ -160,4 +165,79 @@ export async function getTransactions(id: string): Promise<TransactionWithCatego
     .order("txn_date", { ascending: true });
   if (error) throw error;
   return (data as unknown as TransactionWithCategory[]) ?? [];
+}
+
+export async function getTransaction(txnId: string): Promise<TransactionWithCategory | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*, transaction_categories(category_group, direction, label)")
+    .eq("id", txnId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as unknown as TransactionWithCategory) ?? null;
+}
+
+// --- Documents -------------------------------------------------------------
+
+export async function getPropertyDocuments(propertyId: string): Promise<DocumentRecord[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("property_id", propertyId)
+    .order("uploaded_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getTransactionDocuments(txnId: string): Promise<DocumentRecord[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("transaction_id", txnId)
+    .order("uploaded_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** Property-level docs (no transaction/lease link) — e.g. the closing packet. */
+export async function getPropertyLevelDocuments(propertyId: string): Promise<DocumentRecord[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("property_id", propertyId)
+    .is("transaction_id", null)
+    .is("lease_id", null)
+    .order("uploaded_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getAllDocuments(): Promise<DocumentWithProperty[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*, properties(address, city, state)")
+    .order("uploaded_at", { ascending: false });
+  if (error) throw error;
+  return (data as unknown as DocumentWithProperty[]) ?? [];
+}
+
+/** Batch-sign storage paths → { path: signedUrl }. RLS scopes to the user. */
+export async function getSignedUrlMap(
+  paths: string[],
+  expiresIn = 3600,
+): Promise<Record<string, string>> {
+  if (paths.length === 0) return {};
+  const supabase = createClient();
+  const { data, error } = await supabase.storage.from("documents").createSignedUrls(paths, expiresIn);
+  if (error) throw error;
+  const map: Record<string, string> = {};
+  for (const item of data ?? []) {
+    if (item.signedUrl && item.path) map[item.path] = item.signedUrl;
+  }
+  return map;
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { money, dateLabel } from "@/lib/format";
 import type { TransactionWithCategory } from "@/lib/queries";
@@ -24,6 +25,7 @@ export function TransactionsTable({ transactions }: { transactions: TransactionW
               <th className="px-5 py-2 font-medium">Category</th>
               <th className="px-5 py-2 font-medium">Description</th>
               <th className="px-5 py-2 text-right font-medium">Amount</th>
+              <th className="px-5 py-2" />
             </tr>
           </thead>
           <tbody>
@@ -48,6 +50,14 @@ export function TransactionsTable({ transactions }: { transactions: TransactionW
                   >
                     {income ? "+" : "−"}
                     {money(t.amount_cents)}
+                  </td>
+                  <td className="whitespace-nowrap px-5 py-2 text-right">
+                    <Link
+                      href={`/properties/${t.property_id}/transactions/${t.id}`}
+                      className="text-sm text-brand"
+                    >
+                      View
+                    </Link>
                   </td>
                 </tr>
               );

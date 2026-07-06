@@ -54,6 +54,10 @@ export type MarketSource = "zillow_estimate" | "appraisal" | "manual";
 
 export type UtilityServiceType = "electric" | "water_sewer_trash" | "internet" | "gas";
 
+export type DocumentType =
+  | "receipt" | "lease" | "closing_disclosure" | "tax_document"
+  | "insurance" | "statement" | "appraisal" | "other";
+
 // Transaction category codes (seeded rows in transaction_categories).
 // Kept as a string-literal union for compile-time safety even though the DB
 // stores it as a text FK (so new categories can be added without a type migration).
@@ -412,7 +416,6 @@ export interface Database {
           category: TransactionCategoryCode;
           description: string | null;
           paid_by: PaidBy;
-          receipt_url: string | null;
           is_estimate: boolean;
           notes: string | null;
           created_at: Timestamptz;
@@ -428,7 +431,6 @@ export interface Database {
           category: TransactionCategoryCode;
           description?: string | null;
           paid_by?: PaidBy;
-          receipt_url?: string | null;
           is_estimate?: boolean;
           notes?: string | null;
           created_at?: Timestamptz;
@@ -484,6 +486,42 @@ export interface Database {
           updated_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["utility_accounts"]["Insert"]>;
+      };
+
+      documents: {
+        Row: {
+          id: string;
+          user_id: string;
+          property_id: string;
+          transaction_id: string | null;
+          lease_id: string | null;
+          storage_path: string;
+          file_name: string;
+          mime_type: string | null;
+          size_bytes: number | null;
+          doc_type: DocumentType;
+          title: string | null;
+          notes: string | null;
+          uploaded_at: Timestamptz;
+          created_at: Timestamptz;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          property_id: string;
+          transaction_id?: string | null;
+          lease_id?: string | null;
+          storage_path: string;
+          file_name: string;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          doc_type?: DocumentType;
+          title?: string | null;
+          notes?: string | null;
+          uploaded_at?: Timestamptz;
+          created_at?: Timestamptz;
+        };
+        Update: Partial<Database["public"]["Tables"]["documents"]["Insert"]>;
       };
     };
 
@@ -568,6 +606,7 @@ export type TransactionCategory = Tables<"transaction_categories">;
 export type Transaction = Tables<"transactions">;
 export type MarketSnapshot = Tables<"market_snapshots">;
 export type UtilityAccount = Tables<"utility_accounts">;
+export type DocumentRecord = Tables<"documents">;
 
 export type LoanPayment = Database["public"]["Views"]["v_loan_payment"]["Row"];
 export type PropertyYields = Database["public"]["Views"]["v_property_yields"]["Row"];
