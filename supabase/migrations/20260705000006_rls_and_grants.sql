@@ -230,6 +230,7 @@ grant usage on schema public to authenticated, service_role;
 grant select, insert, update, delete on all tables in schema public to authenticated, service_role;
 
 grant execute on function mortgage_monthly_pi(bigint, numeric, integer)  to authenticated;
+grant execute on function exemption_amount_cents(bigint, numeric, bigint, bigint, bigint) to authenticated;
 grant execute on function property_current_escrow(uuid, date)            to authenticated;
 grant execute on function property_annual_tax_cents(uuid, integer)       to authenticated;
 grant execute on function property_tax_basis_cents(uuid)                 to authenticated;

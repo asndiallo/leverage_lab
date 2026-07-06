@@ -30,6 +30,32 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------------
+-- exemption_amount_cents — the one clamp formula the whole tax engine is
+-- built from: clamp(flat + percent*base, min, max). Shared by
+-- property_annual_tax_cents, property_tax_breakdown, and
+-- property_tax_with_homestead_cents below, so the formula only needs to be
+-- right in one place (see 0003's tax_exemptions comment for the shapes this
+-- covers: flat-only, percent-with-floor, additive percent+flat).
+-- ---------------------------------------------------------------------------
+create or replace function exemption_amount_cents(
+  p_flat_cents bigint,
+  p_percent    numeric,
+  p_base_cents bigint,
+  p_min_cents  bigint,
+  p_max_cents  bigint
+) returns bigint
+language sql immutable
+as $$
+  select greatest(
+    least(
+      coalesce(p_flat_cents, 0) + round(p_base_cents * coalesce(p_percent, 0))::bigint,
+      coalesce(p_max_cents, 9223372036854775807)
+    ),
+    coalesce(p_min_cents, 0)
+  );
+$$;
+
+-- ---------------------------------------------------------------------------
 -- v_loan_payment — monthly P&I per loan (override wins when present).
 -- ---------------------------------------------------------------------------
 create or replace view v_loan_payment as
@@ -102,13 +128,9 @@ as $$
     select
       x.jurisdiction_id,
       sum(
-        greatest(
-          least(
-            coalesce(x.flat_amount_cents, 0)
-              + round((select base_cents from av) * coalesce(x.percent, 0))::bigint,
-            coalesce(x.max_amount_cents, 9223372036854775807)
-          ),
-          coalesce(x.min_amount_cents, 0)
+        exemption_amount_cents(
+          x.flat_amount_cents, x.percent, (select base_cents from av),
+          x.min_amount_cents, x.max_amount_cents
         )
       ) as exemption_cents
     from active_ex x
@@ -439,13 +461,9 @@ as $$
   ex_per_j as (
     select x.jurisdiction_id,
       sum(
-        greatest(
-          least(
-            coalesce(x.flat_amount_cents, 0)
-              + round((select base_cents from av) * coalesce(x.percent, 0))::bigint,
-            coalesce(x.max_amount_cents, 9223372036854775807)
-          ),
-          coalesce(x.min_amount_cents, 0)
+        exemption_amount_cents(
+          x.flat_amount_cents, x.percent, (select base_cents from av),
+          x.min_amount_cents, x.max_amount_cents
         )
       ) as exemption_cents
     from active_ex x
@@ -495,13 +513,9 @@ as $$
   ),
   ex_per_j as (
     select x.jurisdiction_id,
-      greatest(
-        least(
-          coalesce(x.flat_amount_cents, 0)
-            + round((select base_cents from av) * coalesce(x.percent, 0))::bigint,
-          coalesce(x.max_amount_cents, 9223372036854775807)
-        ),
-        coalesce(x.min_amount_cents, 0)
+      exemption_amount_cents(
+        x.flat_amount_cents, x.percent, (select base_cents from av),
+        x.min_amount_cents, x.max_amount_cents
       ) as exemption_cents
     from active_ex x
   )
