@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp } from "lucide-react";
 import { deleteTransactions } from "@/lib/actions";
+import { useSelection } from "@/lib/hooks/useSelection";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ConfirmDeleteButton } from "@/components/forms/ConfirmDeleteButton";
+import { SortDirectionButton } from "@/components/forms/SortDirectionButton";
+import { BulkDeleteBar } from "@/components/forms/BulkDeleteBar";
 import { money, dateLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { TransactionWithCategory } from "@/lib/queries";
@@ -63,25 +63,7 @@ export function TransactionsTable({ transactions }: { transactions: TransactionW
   }, [transactions, groupFilter, sortKey, sortDir]);
 
   const visibleIds = useMemo(() => rows.map((t) => t.id), [rows]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setSelected((prev) => {
-      const next = new Set([...prev].filter((id) => visibleIds.includes(id)));
-      return next.size === prev.size ? prev : next;
-    });
-  }, [visibleIds]);
-
-  function toggle(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+  const { selected, toggle, allSelected, toggleAll, clear } = useSelection(visibleIds);
 
   if (transactions.length === 0) {
     return (
@@ -96,18 +78,13 @@ export function TransactionsTable({ transactions }: { transactions: TransactionW
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="font-medium">Transactions</h2>
-          {selected.size > 0 && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">{selected.size} selected</span>
-              <ConfirmDeleteButton
-                action={deleteTransactions}
-                hiddenFields={{ transaction_ids: [...selected].join(","), property_id: propertyId }}
-                title={`Delete ${selected.size} transaction${selected.size === 1 ? "" : "s"}?`}
-                triggerLabel={`Delete ${selected.size}`}
-                onDeleted={() => setSelected(new Set())}
-              />
-            </div>
-          )}
+          <BulkDeleteBar
+            count={selected.size}
+            action={deleteTransactions}
+            hiddenFields={{ transaction_ids: [...selected].join(","), property_id: propertyId }}
+            itemLabel="transaction"
+            onDeleted={clear}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={groupFilter} onValueChange={(v) => setGroupFilter(v as GroupFilter)}>
@@ -137,15 +114,10 @@ export function TransactionsTable({ transactions }: { transactions: TransactionW
             </SelectContent>
           </Select>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-            aria-label={sortDir === "asc" ? "Ascending" : "Descending"}
-          >
-            {sortDir === "asc" ? <ArrowUp className="size-3.5" /> : <ArrowDown className="size-3.5" />}
-          </Button>
+          <SortDirectionButton
+            sortDir={sortDir}
+            onToggle={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          />
         </div>
       </div>
 
@@ -156,13 +128,7 @@ export function TransactionsTable({ transactions }: { transactions: TransactionW
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="pl-5">
-                <Checkbox
-                  checked={allVisibleSelected}
-                  onCheckedChange={() =>
-                    setSelected(allVisibleSelected ? new Set() : new Set(visibleIds))
-                  }
-                  aria-label="Select all"
-                />
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all" />
               </TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Category</TableHead>

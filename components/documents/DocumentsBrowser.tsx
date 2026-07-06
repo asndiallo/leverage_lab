@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { useMemo, useState } from "react";
 import { deleteDocuments } from "@/lib/actions";
+import { useSelection } from "@/lib/hooks/useSelection";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ConfirmDeleteButton } from "@/components/forms/ConfirmDeleteButton";
+import { SortDirectionButton } from "@/components/forms/SortDirectionButton";
+import { BulkDeleteBar } from "@/components/forms/BulkDeleteBar";
 import { DOCUMENT_TYPES } from "@/lib/constants";
 import { DocumentList } from "./DocumentList";
 import type { DocumentWithProperty } from "@/lib/queries";
@@ -63,50 +63,19 @@ export function DocumentsBrowser({
   }, [docs, typeFilter, sortKey, sortDir]);
 
   const visibleIds = useMemo(() => groups.flatMap((g) => g.docs.map((d) => d.id)), [groups]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  // Drop any selected id that's no longer visible (filter changed, or a
-  // single-row delete removed it) so the count/bar stay accurate.
-  useEffect(() => {
-    setSelected((prev) => {
-      const next = new Set([...prev].filter((id) => visibleIds.includes(id)));
-      return next.size === prev.size ? prev : next;
-    });
-  }, [visibleIds]);
-
-  function toggle(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+  const { selected, toggle, allSelected, toggleAll, clear } = useSelection(visibleIds);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
-        <Checkbox
-          checked={allVisibleSelected}
-          onCheckedChange={() =>
-            setSelected(allVisibleSelected ? new Set() : new Set(visibleIds))
-          }
-          aria-label="Select all"
+        <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all" />
+        <BulkDeleteBar
+          count={selected.size}
+          action={deleteDocuments}
+          hiddenFields={{ document_ids: [...selected].join(",") }}
+          itemLabel="document"
+          onDeleted={clear}
         />
-        {selected.size > 0 && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">{selected.size} selected</span>
-            <ConfirmDeleteButton
-              action={deleteDocuments}
-              hiddenFields={{ document_ids: [...selected].join(",") }}
-              title={`Delete ${selected.size} document${selected.size === 1 ? "" : "s"}?`}
-              triggerLabel={`Delete ${selected.size}`}
-              onDeleted={() => setSelected(new Set())}
-            />
-          </div>
-        )}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
             <SelectTrigger className="w-44">
@@ -135,15 +104,10 @@ export function DocumentsBrowser({
             </SelectContent>
           </Select>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-            aria-label={sortDir === "asc" ? "Ascending" : "Descending"}
-          >
-            {sortDir === "asc" ? <ArrowUp className="size-3.5" /> : <ArrowDown className="size-3.5" />}
-          </Button>
+          <SortDirectionButton
+            sortDir={sortDir}
+            onToggle={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          />
         </div>
       </div>
 
