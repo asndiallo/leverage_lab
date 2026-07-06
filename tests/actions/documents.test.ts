@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { uploadDocument, linkDocument, unlinkDocument, deleteDocument } from "@/lib/actions";
+import { uploadDocument, linkDocument, unlinkDocument, deleteDocument, deleteDocuments } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
 import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
 import { createTestProperty, createTestTransaction, deleteTestProperty } from "../setup/fixtures";
@@ -135,5 +135,41 @@ describe("document Server Actions", () => {
       .from("documents")
       .list(doc!.storage_path.split("/").slice(0, -1).join("/"));
     expect(stillInStorage?.some((f) => doc!.storage_path.endsWith(f.name))).toBe(false);
+  });
+
+  it("bulk-deletes multiple documents and their storage objects in one call", async () => {
+    await actAs(user);
+    await uploadDocument(emptyActionState, buildFormData({
+      property_id: propertyId, doc_type: "other", file: pdfFile("bulk-a.pdf"),
+    }));
+    await uploadDocument(emptyActionState, buildFormData({
+      property_id: propertyId, doc_type: "other", file: pdfFile("bulk-b.pdf"),
+    }));
+    const { data: docs } = await user.client
+      .from("documents")
+      .select("id, storage_path")
+      .eq("property_id", propertyId)
+      .in("file_name", ["bulk-a.pdf", "bulk-b.pdf"]);
+    expect(docs).toHaveLength(2);
+    const ids = docs!.map((d) => d.id);
+
+    const result = await deleteDocuments(emptyActionState, buildFormData({ document_ids: ids.join(",") }));
+    expect(result.error).toBeUndefined();
+
+    const { data: after } = await user.client.from("documents").select("id").in("id", ids);
+    expect(after).toEqual([]);
+
+    for (const doc of docs!) {
+      const { data: stillInStorage } = await user.client.storage
+        .from("documents")
+        .list(doc.storage_path.split("/").slice(0, -1).join("/"));
+      expect(stillInStorage?.some((f) => doc.storage_path.endsWith(f.name))).toBe(false);
+    }
+  });
+
+  it("rejects a bulk delete with no ids selected", async () => {
+    await actAs(user);
+    const result = await deleteDocuments(emptyActionState, buildFormData({ document_ids: "" }));
+    expect(result.error).toBe("No documents selected");
   });
 });

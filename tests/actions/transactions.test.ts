@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { addTransaction, updateTransaction, deleteTransaction } from "@/lib/actions";
+import { addTransaction, updateTransaction, deleteTransaction, deleteTransactions } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
 import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
 import { createTestProperty, deleteTestProperty } from "../setup/fixtures";
@@ -95,5 +95,43 @@ describe("transaction Server Actions", () => {
 
     const { data: after } = await user.client.from("transactions").select("id").eq("id", row!.id);
     expect(after).toEqual([]);
+  });
+
+  it("bulk-deletes multiple transactions in one call", async () => {
+    await actAs(user);
+    const a = await addTransaction(emptyActionState, buildFormData({
+      property_id: propertyId, txn_date: "2026-06-01", category: "insurance",
+      amount: "10", paid_by: "owner", is_estimate: false,
+    }));
+    const b = await addTransaction(emptyActionState, buildFormData({
+      property_id: propertyId, txn_date: "2026-06-02", category: "hoa_dues",
+      amount: "20", paid_by: "owner", is_estimate: false,
+    }));
+    expect(a.error).toBeUndefined();
+    expect(b.error).toBeUndefined();
+
+    const { data: rows } = await user.client
+      .from("transactions")
+      .select("id")
+      .eq("property_id", propertyId)
+      .in("category", ["insurance", "hoa_dues"]);
+    expect(rows).toHaveLength(2);
+    const ids = rows!.map((r) => r.id);
+
+    const result = await deleteTransactions(emptyActionState, buildFormData({
+      transaction_ids: ids.join(","), property_id: propertyId,
+    }));
+    expect(result.error).toBeUndefined();
+
+    const { data: after } = await user.client.from("transactions").select("id").in("id", ids);
+    expect(after).toEqual([]);
+  });
+
+  it("rejects a bulk delete with no ids selected", async () => {
+    await actAs(user);
+    const result = await deleteTransactions(emptyActionState, buildFormData({
+      transaction_ids: "", property_id: propertyId,
+    }));
+    expect(result.error).toBe("No transactions selected");
   });
 });
