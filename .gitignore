@@ -19,3 +19,5 @@ supabase/.branches/
 .DS_Store
 *.log
 *.tsbuildinfo
+.vercel
+.env*
