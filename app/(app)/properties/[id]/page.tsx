@@ -16,6 +16,8 @@ import {
   getVacancyPeriods,
   getHomesteadStatus,
   getTaxWithHomesteadCents,
+  getPropertyMembers,
+  getPendingInvites,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
@@ -25,6 +27,7 @@ import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { TransactionsTable } from "@/components/TransactionsTable";
 import { LeaseForm } from "@/components/forms/LeaseForm";
 import { TransactionForm } from "@/components/forms/TransactionForm";
+import { CoOwnersCard } from "@/components/forms/CoOwnersCard";
 
 export const dynamic = "force-dynamic";
 
@@ -44,17 +47,29 @@ export default async function PropertyPage({
     ? Number(searchParams.horizon)
     : 12;
 
-  const [loans, loanPayments, yields, taxBasisCents, taxYear, transactions, categories, vacancyPeriods] =
-    await Promise.all([
-      getLoans(params.id),
-      getLoanPayments(params.id),
-      getPropertyYields(params.id),
-      getTaxBasisCents(params.id),
-      getLatestTaxRateYear(params.id),
-      getTransactions(params.id),
-      getCategories(),
-      getVacancyPeriods(params.id),
-    ]);
+  const [
+    loans,
+    loanPayments,
+    yields,
+    taxBasisCents,
+    taxYear,
+    transactions,
+    categories,
+    vacancyPeriods,
+    members,
+    pendingInvites,
+  ] = await Promise.all([
+    getLoans(params.id),
+    getLoanPayments(params.id),
+    getPropertyYields(params.id),
+    getTaxBasisCents(params.id),
+    getLatestTaxRateYear(params.id),
+    getTransactions(params.id),
+    getCategories(),
+    getVacancyPeriods(params.id),
+    getPropertyMembers(params.id),
+    getPendingInvites(params.id),
+  ]);
 
   const homestead = await getHomesteadStatus(params.id);
 
@@ -105,6 +120,8 @@ export default async function PropertyPage({
         <LeaseForm propertyId={params.id} />
         <TransactionForm propertyId={params.id} categories={categories} />
       </div>
+
+      <CoOwnersCard propertyId={params.id} members={members} pendingInvites={pendingInvites} />
 
       <CashflowStrip rows={cashflow} horizon={horizon} vacancyPeriods={vacancyPeriods} />
 

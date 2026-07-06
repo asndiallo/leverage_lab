@@ -21,6 +21,8 @@ export type PropertyType =
 
 export type PropertyStatus = "pending" | "active" | "sold";
 
+export type InviteStatus = "pending" | "accepted" | "revoked";
+
 export type LoanType = "original" | "refinance" | "heloc" | "second_lien" | "other";
 
 export type RateType = "fixed" | "arm";
@@ -118,6 +120,52 @@ export interface Database {
           updated_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["properties"]["Insert"]>;
+      };
+
+      property_members: {
+        Row: {
+          id: string;
+          property_id: string;
+          user_id: string;
+          invited_by: string | null;
+          created_at: Timestamptz;
+        };
+        Insert: {
+          id?: string;
+          property_id: string;
+          user_id: string;
+          invited_by?: string | null;
+          created_at?: Timestamptz;
+        };
+        Update: Partial<Database["public"]["Tables"]["property_members"]["Insert"]>;
+      };
+
+      property_invites: {
+        Row: {
+          id: string;
+          property_id: string;
+          email: string;
+          invited_by: string;
+          token: string;
+          status: InviteStatus;
+          created_at: Timestamptz;
+          expires_at: Timestamptz;
+          accepted_at: Timestamptz | null;
+          accepted_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          property_id: string;
+          email: string;
+          invited_by: string;
+          token?: string;
+          status?: InviteStatus;
+          created_at?: Timestamptz;
+          expires_at?: Timestamptz;
+          accepted_at?: Timestamptz | null;
+          accepted_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["property_invites"]["Insert"]>;
       };
 
       loans: {
@@ -599,6 +647,14 @@ export interface Database {
         Args: { p_property_id: string; p_tax_year: number };
         Returns: number;
       };
+      accept_property_invite: {
+        Args: { p_token: string };
+        Returns: string; // property_id
+      };
+      property_members_with_email: {
+        Args: { p_property_id: string };
+        Returns: { user_id: string; email: string; created_at: Timestamptz }[];
+      };
     };
   };
 }
@@ -613,6 +669,8 @@ export type UpdateDto<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Update"];
 
 export type Property = Tables<"properties">;
+export type PropertyMember = Tables<"property_members">;
+export type PropertyInvite = Tables<"property_invites">;
 export type Loan = Tables<"loans">;
 export type EscrowSchedule = Tables<"escrow_schedules">;
 export type PropertySettings = Tables<"property_settings">;

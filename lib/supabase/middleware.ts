@@ -32,7 +32,10 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = path === "/login" || path.startsWith("/auth");
+  // /invites/[token] handles its own auth check (redirecting to /login with a
+  // `next` back to itself) — it must NOT be caught here first, since this
+  // middleware's redirect strips the query string and would lose the token.
+  const isPublic = path === "/login" || path.startsWith("/auth") || path.startsWith("/invites");
 
   // Unauthenticated → send to login (except on public routes). Clear the query
   // string so stray params (e.g. a leftover OAuth `code`) never ride along.

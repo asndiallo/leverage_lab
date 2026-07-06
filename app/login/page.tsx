@@ -19,7 +19,12 @@ const COPY: Record<Mode, { title: string; cta: string }> = {
   magic: { title: "Sign in with a magic link.", cta: "Send magic link" },
 };
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { next?: string };
+}) {
+  const next = searchParams?.next || "/";
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +44,9 @@ export default function LoginPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/confirm` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
+      },
     });
     if (error) {
       setError(error.message);
@@ -58,7 +65,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setLoading(false);
       if (error) setError(error.message);
-      else window.location.assign("/");
+      else window.location.assign(next);
       return;
     }
 
@@ -66,11 +73,13 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
+        },
       });
       setLoading(false);
       if (error) setError(error.message);
-      else window.location.assign("/");
+      else window.location.assign(next);
       return;
     }
 
@@ -87,7 +96,9 @@ export default function LoginPage() {
     // magic link
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
+      },
     });
     setLoading(false);
     if (error) setError(error.message);
