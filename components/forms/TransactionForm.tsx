@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";
 import { addTransaction } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
 import { Field, SubmitButton, inputClass } from "./formPrimitives";
-import type { CategoryGroup } from "@/types/database";
-
-type Category = { code: string; label: string; category_group: CategoryGroup };
-
-const groupLabels: Record<CategoryGroup, string> = {
-  income: "Income",
-  operating_expense: "Operating expense",
-  capital_improvement: "Capital improvement",
-  loan: "Loan",
-  closing: "Closing",
-};
+import { CategorySelect, type CategoryOption } from "./CategorySelect";
 
 export function TransactionForm({
   propertyId,
   categories,
 }: {
   propertyId: string;
-  categories: Category[];
+  categories: CategoryOption[];
 }) {
   const [open, setOpen] = useState(false);
   const [state, action] = useFormState(addTransaction, emptyActionState);
@@ -34,16 +24,6 @@ export function TransactionForm({
       setOpen(false);
     }
   }, [state]);
-
-  const grouped = useMemo(() => {
-    const by = new Map<CategoryGroup, Category[]>();
-    for (const c of categories) {
-      const arr = by.get(c.category_group) ?? [];
-      arr.push(c);
-      by.set(c.category_group, arr);
-    }
-    return by;
-  }, [categories]);
 
   if (!open) {
     return (
@@ -65,20 +45,7 @@ export function TransactionForm({
           <input name="txn_date" type="date" required className={inputClass} />
         </Field>
         <Field label="Category">
-          <select name="category" required defaultValue="" className={inputClass}>
-            <option value="" disabled>
-              Select…
-            </option>
-            {[...grouped.entries()].map(([group, items]) => (
-              <optgroup key={group} label={groupLabels[group]}>
-                {items.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+          <CategorySelect categories={categories} />
         </Field>
         <Field label="Amount ($)">
           <input name="amount" type="number" step="0.01" min="0" required className={inputClass} />

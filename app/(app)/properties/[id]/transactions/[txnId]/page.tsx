@@ -4,14 +4,19 @@ import {
   getProperty,
   getTransaction,
   getTransactionDocuments,
-  getPropertyLevelDocuments,
+  getUnlinkedPropertyDocuments,
+  getLinkableDocuments,
+  getCategories,
   getSignedUrlMap,
 } from "@/lib/queries";
 import { money, dateLabel } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
+import { EditTransactionForm } from "@/components/forms/EditTransactionForm";
 import { DocumentUpload } from "@/components/documents/DocumentUpload";
 import { DocumentPreview } from "@/components/documents/DocumentPreview";
 import { DocumentList } from "@/components/documents/DocumentList";
+import { LinkDocumentForm } from "@/components/documents/LinkDocumentForm";
+import { UnlinkDocButton } from "@/components/documents/UnlinkDocButton";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +25,22 @@ export default async function TransactionPage({
 }: {
   params: { id: string; txnId: string };
 }) {
-  const [property, txn] = await Promise.all([
+  const [property, txn, categories] = await Promise.all([
     getProperty(params.id),
     getTransaction(params.txnId),
+    getCategories(),
   ]);
   if (!property || !txn || txn.property_id !== params.id) notFound();
 
-  const [docs, propertyDocs] = await Promise.all([
+  const [linked, unlinked, linkable] = await Promise.all([
     getTransactionDocuments(params.txnId),
-    getPropertyLevelDocuments(params.id),
+    getUnlinkedPropertyDocuments(params.id),
+    getLinkableDocuments(params.id, params.txnId),
   ]);
-  const urlMap = await getSignedUrlMap(
-    [...docs, ...propertyDocs].map((d) => d.storage_path),
-  );
+  const urlMap = await getSignedUrlMap([
+    ...linked.map((l) => l.doc.storage_path),
+    ...unlinked.map((d) => d.storage_path),
+  ]);
   const income = txn.transaction_categories?.direction === "income";
 
   return (
@@ -61,34 +69,55 @@ export default async function TransactionPage({
           </div>
         </div>
         {txn.notes && <p className="mt-3 text-sm text-muted">{txn.notes}</p>}
+        <div className="mt-4">
+          <EditTransactionForm txn={txn} categories={categories} />
+        </div>
       </div>
 
       <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-medium">Documents</h2>
-          <DocumentUpload
-            propertyId={params.id}
-            transactionId={params.txnId}
-            defaultType="receipt"
-            label="Upload receipt"
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <LinkDocumentForm
+              propertyId={params.id}
+              transactionId={params.txnId}
+              candidates={linkable}
+            />
+            <DocumentUpload
+              propertyId={params.id}
+              transactionId={params.txnId}
+              defaultType="receipt"
+              label="Upload receipt"
+            />
+          </div>
         </div>
-        {docs.length === 0 ? (
+        {linked.length === 0 ? (
           <p className="text-sm text-muted">No documents linked to this transaction yet.</p>
         ) : (
           <div className="space-y-4">
-            {docs.map((d) => (
-              <DocumentPreview key={d.id} doc={d} url={urlMap[d.storage_path]} />
+            {linked.map(({ link_id, doc }) => (
+              <DocumentPreview
+                key={link_id}
+                doc={doc}
+                url={urlMap[doc.storage_path]}
+                controls={
+                  <UnlinkDocButton
+                    linkId={link_id}
+                    propertyId={params.id}
+                    transactionId={params.txnId}
+                  />
+                }
+              />
             ))}
           </div>
         )}
       </section>
 
-      {propertyDocs.length > 0 && (
+      {unlinked.length > 0 && (
         <section className="space-y-3">
-          <h2 className="font-medium">Closing &amp; property documents</h2>
+          <h2 className="font-medium">Other property documents</h2>
           <div className="rounded-xl border border-border bg-surface p-4">
-            <DocumentList docs={propertyDocs} urlMap={urlMap} />
+            <DocumentList docs={unlinked} urlMap={urlMap} />
           </div>
         </section>
       )}

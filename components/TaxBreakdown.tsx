@@ -40,8 +40,9 @@ export function TaxBreakdown({ rows, year }: { rows: TaxBreakdownRow[]; year: nu
         </table>
       </div>
       <p className="border-t border-border px-5 py-3 text-xs text-muted">
-        Homestead exemptions on file (SCUCISD $140K, City $5K, County 1%, Lateral Roads 1%+$3K) take
-        effect tax year 2027.
+        Homestead not yet filed — you plan to apply after closing. Once filed, the SCUCISD $140K,
+        City $5K, County 1% (min $5K), and Lateral Roads 1%+$3K exemptions take effect for tax year
+        2027.
       </p>
     </div>
   );

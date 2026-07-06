@@ -493,8 +493,6 @@ export interface Database {
           id: string;
           user_id: string;
           property_id: string;
-          transaction_id: string | null;
-          lease_id: string | null;
           storage_path: string;
           file_name: string;
           mime_type: string | null;
@@ -509,8 +507,6 @@ export interface Database {
           id?: string;
           user_id: string;
           property_id: string;
-          transaction_id?: string | null;
-          lease_id?: string | null;
           storage_path: string;
           file_name: string;
           mime_type?: string | null;
@@ -522,6 +518,26 @@ export interface Database {
           created_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["documents"]["Insert"]>;
+      };
+
+      document_links: {
+        Row: {
+          id: string;
+          user_id: string;
+          document_id: string;
+          transaction_id: string | null;
+          lease_id: string | null;
+          created_at: Timestamptz;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          document_id: string;
+          transaction_id?: string | null;
+          lease_id?: string | null;
+          created_at?: Timestamptz;
+        };
+        Update: Partial<Database["public"]["Tables"]["document_links"]["Insert"]>;
       };
     };
 

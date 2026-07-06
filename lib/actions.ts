@@ -128,6 +128,70 @@ export async function addTransaction(
   return { ok: true };
 }
 
+const updateTransactionSchema = transactionSchema.extend({ id: z.string().uuid() });
+
+export async function updateTransaction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const parsed = updateTransactionSchema.safeParse({
+    id: String(formData.get("id") ?? ""),
+    property_id: String(formData.get("property_id") ?? ""),
+    txn_date: String(formData.get("txn_date") ?? ""),
+    category: String(formData.get("category") ?? ""),
+    amount: String(formData.get("amount") ?? ""),
+    description: String(formData.get("description") ?? ""),
+    paid_by: String(formData.get("paid_by") ?? "owner"),
+    is_estimate: formData.get("is_estimate") === "on",
+  });
+  if (!parsed.success) return { error: firstError(parsed.error) };
+  const v = parsed.data;
+
+  const { error } = await supabase
+    .from("transactions")
+    .update({
+      txn_date: v.txn_date,
+      category: v.category as TransactionCategoryCode,
+      amount_cents: dollarsToCents(v.amount),
+      description: v.description || null,
+      paid_by: v.paid_by,
+      is_estimate: v.is_estimate,
+    })
+    .eq("id", v.id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${v.property_id}`);
+  revalidatePath(`/properties/${v.property_id}/transactions/${v.id}`);
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteTransaction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const id = String(formData.get("id") ?? "");
+  const propertyId = String(formData.get("property_id") ?? "");
+  const { error } = await supabase.from("transactions").delete().eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${propertyId}`);
+  revalidatePath("/");
+  return { ok: true };
+}
+
 // ---------------------------------------------------------------------------
 // Documents (upload to private Storage + record row; delete removes both)
 // ---------------------------------------------------------------------------
@@ -187,8 +251,6 @@ export async function uploadDocument(_prev: ActionState, formData: FormData): Pr
     id,
     user_id: user.id,
     property_id: v.property_id,
-    transaction_id: v.transaction_id || null,
-    lease_id: v.lease_id || null,
     storage_path: path,
     file_name: file.name,
     mime_type: file.type || null,
@@ -201,9 +263,61 @@ export async function uploadDocument(_prev: ActionState, formData: FormData): Pr
     return { error: dErr.message };
   }
 
+  // Optionally attach to a transaction or lease via the join table.
+  if (v.transaction_id || v.lease_id) {
+    const { error: lErr } = await supabase.from("document_links").insert({
+      user_id: user.id,
+      document_id: id,
+      transaction_id: v.transaction_id || null,
+      lease_id: v.lease_id || null,
+    });
+    if (lErr) return { error: lErr.message };
+  }
+
   revalidatePath("/documents");
   revalidatePath(`/properties/${v.property_id}`);
   if (v.transaction_id) revalidatePath(`/properties/${v.property_id}/transactions/${v.transaction_id}`);
+  return { ok: true };
+}
+
+export async function linkDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const documentId = String(formData.get("document_id") ?? "");
+  const transactionId = String(formData.get("transaction_id") ?? "");
+  const propertyId = String(formData.get("property_id") ?? "");
+  if (!documentId || !transactionId) return { error: "Choose a document to link" };
+
+  const { error } = await supabase.from("document_links").insert({
+    user_id: user.id,
+    document_id: documentId,
+    transaction_id: transactionId,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${propertyId}/transactions/${transactionId}`);
+  return { ok: true };
+}
+
+export async function unlinkDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const linkId = String(formData.get("link_id") ?? "");
+  const { error } = await supabase.from("document_links").delete().eq("id", linkId);
+  if (error) return { error: error.message };
+
+  const propertyId = String(formData.get("property_id") ?? "");
+  const transactionId = String(formData.get("transaction_id") ?? "");
+  if (propertyId && transactionId)
+    revalidatePath(`/properties/${propertyId}/transactions/${transactionId}`);
   return { ok: true };
 }
 
@@ -217,20 +331,19 @@ export async function deleteDocument(_prev: ActionState, formData: FormData): Pr
   const id = String(formData.get("document_id") ?? "");
   const { data: doc, error: fErr } = await supabase
     .from("documents")
-    .select("storage_path, property_id, transaction_id")
+    .select("storage_path, property_id")
     .eq("id", id)
     .maybeSingle();
   if (fErr) return { error: fErr.message };
   if (!doc) return { error: "Document not found" };
 
   await supabase.storage.from(BUCKET).remove([doc.storage_path]);
+  // document_links rows cascade-delete via FK.
   const { error: dErr } = await supabase.from("documents").delete().eq("id", id);
   if (dErr) return { error: dErr.message };
 
   revalidatePath("/documents");
   revalidatePath(`/properties/${doc.property_id}`);
-  if (doc.transaction_id)
-    revalidatePath(`/properties/${doc.property_id}/transactions/${doc.transaction_id}`);
   return { ok: true };
 }
 

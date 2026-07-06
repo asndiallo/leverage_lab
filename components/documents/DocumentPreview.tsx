@@ -1,13 +1,14 @@
 import { Badge } from "@/components/ui/Badge";
-import { DeleteDocButton } from "./DeleteDocButton";
 import type { DocumentRecord } from "@/types/database";
 
 export function DocumentPreview({
   doc,
   url,
+  controls,
 }: {
   doc: DocumentRecord;
   url: string | undefined;
+  controls?: React.ReactNode;
 }) {
   const isPdf =
     doc.mime_type === "application/pdf" || doc.file_name.toLowerCase().endsWith(".pdf");
@@ -25,7 +26,7 @@ export function DocumentPreview({
               Open
             </a>
           )}
-          <DeleteDocButton documentId={doc.id} />
+          {controls}
         </div>
       </div>
       {!url ? (

@@ -16,6 +16,8 @@ export type DocumentWithProperty = DocumentRecord & {
   properties: { address: string; city: string; state: string } | null;
 };
 
+export type LinkedDocument = { link_id: string; doc: DocumentRecord };
+
 // A transaction joined to its category metadata (group/direction/label).
 export type TransactionWithCategory = Transaction & {
   transaction_categories: {
@@ -191,29 +193,47 @@ export async function getPropertyDocuments(propertyId: string): Promise<Document
   return data ?? [];
 }
 
-export async function getTransactionDocuments(txnId: string): Promise<DocumentRecord[]> {
+/** Documents linked to a transaction (with the link id, for unlinking). */
+export async function getTransactionDocuments(txnId: string): Promise<LinkedDocument[]> {
   const supabase = createClient();
   const { data, error } = await supabase
-    .from("documents")
-    .select("*")
-    .eq("transaction_id", txnId)
-    .order("uploaded_at", { ascending: false });
+    .from("document_links")
+    .select("id, documents(*)")
+    .eq("transaction_id", txnId);
   if (error) throw error;
-  return data ?? [];
+  return ((data as unknown as { id: string; documents: DocumentRecord | null }[]) ?? [])
+    .filter((r) => r.documents)
+    .map((r) => ({ link_id: r.id, doc: r.documents as DocumentRecord }));
 }
 
-/** Property-level docs (no transaction/lease link) — e.g. the closing packet. */
-export async function getPropertyLevelDocuments(propertyId: string): Promise<DocumentRecord[]> {
+/** Property docs not linked to any transaction or lease (general/property-level). */
+export async function getUnlinkedPropertyDocuments(propertyId: string): Promise<DocumentRecord[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("documents")
-    .select("*")
+    .select("*, document_links(id)")
     .eq("property_id", propertyId)
-    .is("transaction_id", null)
-    .is("lease_id", null)
     .order("uploaded_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return ((data as unknown as (DocumentRecord & { document_links: { id: string }[] })[]) ?? [])
+    .filter((d) => (d.document_links?.length ?? 0) === 0);
+}
+
+/** Property docs not yet linked to this transaction — candidates to attach. */
+export async function getLinkableDocuments(
+  propertyId: string,
+  txnId: string,
+): Promise<DocumentRecord[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*, document_links(transaction_id)")
+    .eq("property_id", propertyId)
+    .order("uploaded_at", { ascending: false });
+  if (error) throw error;
+  return ((data as unknown as (DocumentRecord & {
+    document_links: { transaction_id: string | null }[];
+  })[]) ?? []).filter((d) => !d.document_links?.some((l) => l.transaction_id === txnId));
 }
 
 export async function getAllDocuments(): Promise<DocumentWithProperty[]> {
