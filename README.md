@@ -32,8 +32,9 @@ local dev, or the cloud project's dashboard (Settings → API) for production.
 ### Database
 
 Migrations live in `supabase/migrations`; seed data (a single bootstrap owner
-+ one example property) lives in `supabase/seed`. To rebuild the local DB from
-scratch:
+
+- one example property) lives in `supabase/seed`. To rebuild the local DB from
+  scratch:
 
 ```bash
 supabase db reset
@@ -44,12 +45,12 @@ the seed scripts as needed.
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the dev server |
-| `pnpm build` | Production build |
-| `pnpm lint` | ESLint |
-| `pnpm typecheck` | `tsc --noEmit` |
+| Command          | Description          |
+| ---------------- | -------------------- |
+| `pnpm dev`       | Start the dev server |
+| `pnpm build`     | Production build     |
+| `pnpm lint`      | ESLint               |
+| `pnpm typecheck` | `tsc --noEmit`       |
 
 ## Project structure
 
