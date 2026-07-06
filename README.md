@@ -2,7 +2,8 @@
 
 Predictive cash-flow and scenario modeling for real estate — track properties,
 loans, leases, transactions, and property tax across a portfolio, with
-projected cash flow and document management.
+projected cash flow and document management. Properties can have co-owners
+(e.g. a couple) with fully equal access, via an invite-by-link flow.
 
 ## Stack
 
@@ -65,7 +66,7 @@ Vitest, with three kinds of coverage:
   call the real SQL functions/RLS policies via `@supabase/supabase-js`
   against your **local** `supabase start` stack — nothing is mocked, so a bug
   in a migration shows up as a failing test, not just a wrong number in the UI.
-- **`tests/actions/`** — the Server Actions in `lib/actions.ts`, exercised
+- **`tests/actions/`** — the Server Actions in `lib/actions/*`, exercised
   end-to-end (validation → real DB write → real RLS) by mocking `next/headers`
   and `next/cache` (see `tests/setup/mockNext.ts`) so a real signed-in
   Supabase session can flow through `lib/supabase/server.ts` outside of an
@@ -89,8 +90,46 @@ hide.
 ## Project structure
 
 - `app/` — routes (App Router), grouped into `(app)` (authenticated shell),
-  `login`, `reset-password`, and `auth/confirm` (magic-link/OAuth callback).
+  `login`, `reset-password`, `auth/confirm` (magic-link/OAuth callback), and
+  `invites/[token]` (co-owner invite acceptance).
 - `components/` — UI components; `components/ui/` holds shadcn primitives,
-  `components/forms/` holds data-entry forms (Server Actions + `FormData`).
-- `lib/` — Supabase clients, queries, Server Actions, formatting helpers.
+  `components/forms/` holds data-entry forms (Server Actions + `FormData`) and
+  the shared dialog/selection patterns described below.
+- `lib/actions/` — Server Actions, split by domain (`properties`, `leases`,
+  `transactions`, `homestead`, `documents`, `co-ownership`) plus `shared.ts`
+  for the bits every action needs. `lib/actions.ts` is a barrel
+  (`export * from "./actions/x"`) so existing `import { x } from "@/lib/actions"`
+  call sites never need to change when an action moves between domain files.
+- `lib/queries/` — read queries, split the same way, with `lib/queries.ts` as
+  the matching barrel.
+- `lib/hooks/` — shared client-side React hooks (`useSelection`, for
+  checkbox-row bulk selection on filterable/sortable lists).
 - `supabase/` — migrations, seed scripts, and local stack config.
+
+## Conventions
+
+Patterns worth reusing rather than re-implementing:
+
+- **Every Server Action** starts with
+  `const auth = await requireUser(); if (!auth.ok) return { error: auth.error };`
+  (`lib/actions/shared.ts`). Note it's an explicit `ok: true/false` discriminant,
+  not `"error" in auth` — every field on `ActionState` is optional, so `in`
+  doesn't reliably narrow the union.
+- **Add/edit dialogs** use `FormDialogButton`
+  (`components/forms/FormDialogButton.tsx`): pass `action`, `title`,
+  `submitLabel`, a `trigger`, and the field markup as `children` — it owns the
+  open state, resets and closes the form on success, and renders the error
+  message. Skip it only if the dialog must stay open after success (see
+  `CoOwnersCard`'s invite form, which shows the generated invite link).
+- **Delete confirmations** use `ConfirmDeleteButton` (single item) or
+  `BulkDeleteBar` (multi-select, built on `useSelection`) in
+  `components/forms/`. Both close their `AlertDialog` only once the Server
+  Action reports success — `AlertDialogAction` closes on click by default,
+  which used to unmount the form (and silently drop the in-flight delete)
+  before it could complete.
+- **Filterable/sortable lists** (Documents, Transactions) share
+  `lib/hooks/useSelection.ts` for row selection and
+  `components/forms/SortDirectionButton.tsx` for the asc/desc toggle.
+- **SQL**: the Texas tax exemption clamp — `clamp(flat + percent*base, min,
+  max)` — lives once in `exemption_amount_cents()` (migration 0005); every
+  function touching exemptions calls it instead of carrying its own copy.
