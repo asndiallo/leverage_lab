@@ -193,6 +193,28 @@ export async function deleteTransaction(
   return { ok: true };
 }
 
+export async function deleteTransactions(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const ids = String(formData.get("transaction_ids") ?? "").split(",").filter(Boolean);
+  const propertyId = String(formData.get("property_id") ?? "");
+  if (ids.length === 0) return { error: "No transactions selected" };
+
+  const { error } = await supabase.from("transactions").delete().in("id", ids);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${propertyId}`);
+  revalidatePath("/");
+  return { ok: true };
+}
+
 // ---------------------------------------------------------------------------
 // Homestead — mark the property's homestead exemptions filed / not filed.
 // ---------------------------------------------------------------------------
@@ -371,6 +393,35 @@ export async function deleteDocument(_prev: ActionState, formData: FormData): Pr
 
   revalidatePath("/documents");
   revalidatePath(`/properties/${doc.property_id}`);
+  return { ok: true };
+}
+
+export async function deleteDocuments(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const ids = String(formData.get("document_ids") ?? "").split(",").filter(Boolean);
+  if (ids.length === 0) return { error: "No documents selected" };
+
+  const { data: docs, error: fErr } = await supabase
+    .from("documents")
+    .select("storage_path, property_id")
+    .in("id", ids);
+  if (fErr) return { error: fErr.message };
+  if (!docs || docs.length === 0) return { error: "Documents not found" };
+
+  await supabase.storage.from(BUCKET).remove(docs.map((d) => d.storage_path));
+  // document_links rows cascade-delete via FK.
+  const { error: dErr } = await supabase.from("documents").delete().in("id", ids);
+  if (dErr) return { error: dErr.message };
+
+  revalidatePath("/documents");
+  for (const propertyId of new Set(docs.map((d) => d.property_id))) {
+    revalidatePath(`/properties/${propertyId}`);
+  }
   return { ok: true };
 }
 
