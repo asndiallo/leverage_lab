@@ -1,0 +1,39 @@
+name: Dependabot auto-merge
+
+# pull_request_target (not pull_request) is required: GitHub gives
+# Dependabot-triggered `pull_request` runs a read-only GITHUB_TOKEN with no
+# access to repo secrets, regardless of the workflow's own `permissions:`
+# block — the same restriction that broke Claude Code Review on Dependabot
+# PRs earlier. pull_request_target runs with base-repo trust instead, which
+# is only safe here because this workflow never checks out or executes the
+# PR's own code — it just calls the metadata/merge APIs.
+on:
+  pull_request_target:
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      # Patch/minor only. Majors (e.g. the pending next 14->15 bump) always
+      # wait for a human — dependabot.yml already groups minor/patch updates
+      # separately from majors, so this mirrors that same line.
+      - name: Enable auto-merge for patch/minor updates
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

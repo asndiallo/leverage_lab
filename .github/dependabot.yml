@@ -16,9 +16,12 @@ updates:
       development-dependencies:
         dependency-type: "development"
         update-types: ["minor", "patch"]
+    # `include: scope` already appends "(deps)" / "(deps-dev)" itself — a
+    # prefix that also spells those out doubles up (saw this for real in
+    # PRs #14/#7/#4: "chore(deps-dev)(deps-dev): ...").
     commit-message:
-      prefix: "chore(deps)"
-      prefix-development: "chore(deps-dev)"
+      prefix: "chore"
+      prefix-development: "chore"
       include: "scope"
 
   # The CI workflow's own actions (actions/checkout, setup-node, pnpm/action-setup,
@@ -31,5 +34,5 @@ updates:
       github-actions:
         update-types: ["minor", "patch"]
     commit-message:
-      prefix: "ci(deps)"
+      prefix: "ci"
       include: "scope"
