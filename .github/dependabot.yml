@@ -1,0 +1,35 @@
+version: 2
+
+updates:
+  # App dependencies (pnpm — Dependabot reads pnpm-lock.yaml under the npm ecosystem).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Routine minor/patch bumps land as one PR instead of a dozen; majors
+      # (more likely to need code changes) stay separate for individual review.
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      development-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+
+  # The CI workflow's own actions (actions/checkout, setup-node, pnpm/action-setup,
+  # supabase/setup-cli).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        update-types: ["minor", "patch"]
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
