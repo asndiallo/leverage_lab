@@ -1,1 +1,10 @@
-onlyBuiltDependencies: []
+allowBuilds:
+  # Legitimate: transitive dependency of eslint-config-next (Next.js's own
+  # ESLint config) via eslint-import-resolver-typescript. Its "build" step
+  # just selects a prebuilt native binary for the current platform — no
+  # arbitrary script execution. Verified via `pnpm why unrs-resolver`.
+  unrs-resolver: true
+onlyBuiltDependencies:
+  # eslint-config-next (Next.js's own ESLint config) -> eslint-import-resolver-typescript
+  # -> unrs-resolver: a prebuilt native binary selector, no arbitrary script execution.
+  - unrs-resolver
