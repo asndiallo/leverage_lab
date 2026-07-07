@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={cn(GeistSans.variable, GeistMono.variable)}>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="bg-background text-foreground min-h-screen antialiased">
         <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
       </body>
     </html>

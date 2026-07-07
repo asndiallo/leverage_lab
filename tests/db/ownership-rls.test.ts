@@ -1,5 +1,10 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { adminClient, createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
+import {
+  adminClient,
+  createTestUser,
+  deleteTestUser,
+  type TestUser,
+} from "../setup/supabase";
 import {
   createTestProperty,
   createTestTransaction,
@@ -24,7 +29,8 @@ describe("multi-owner RLS and invite flow", () => {
   });
 
   afterEach(async () => {
-    while (cleanupPropertyIds.length) await deleteTestProperty(cleanupPropertyIds.pop()!);
+    while (cleanupPropertyIds.length)
+      await deleteTestProperty(cleanupPropertyIds.pop()!);
   });
 
   async function ownedProperty() {
@@ -35,18 +41,31 @@ describe("multi-owner RLS and invite flow", () => {
 
   it("hides a property (and its child rows) entirely from a non-member", async () => {
     const property = await ownedProperty();
-    await createTestTransaction(owner.client, owner.id, property.id, { category: "rent", amount_cents: 1000 });
+    await createTestTransaction(owner.client, owner.id, property.id, {
+      category: "rent",
+      amount_cents: 1000,
+    });
 
-    const { data: props } = await stranger.client.from("properties").select("id").eq("id", property.id);
+    const { data: props } = await stranger.client
+      .from("properties")
+      .select("id")
+      .eq("id", property.id);
     expect(props).toEqual([]);
 
-    const { data: txns } = await stranger.client.from("transactions").select("id").eq("property_id", property.id);
+    const { data: txns } = await stranger.client
+      .from("transactions")
+      .select("id")
+      .eq("property_id", property.id);
     expect(txns).toEqual([]);
   });
 
   it("hides tax_rates from a non-member of the jurisdiction's property", async () => {
     const property = await ownedProperty();
-    const jurisdiction = await createTestJurisdiction(owner.client, owner.id, property.id);
+    const jurisdiction = await createTestJurisdiction(
+      owner.client,
+      owner.id,
+      property.id,
+    );
     await createTestTaxRate(owner.client, owner.id, jurisdiction.id);
 
     const { data: ratesAsOwner } = await owner.client
@@ -64,9 +83,11 @@ describe("multi-owner RLS and invite flow", () => {
 
   it("denies a direct client insert into property_members (only the trigger/RPC may write it)", async () => {
     const property = await ownedProperty();
-    const { error } = await owner.client
-      .from("property_members")
-      .insert({ property_id: property.id, user_id: stranger.id, invited_by: owner.id });
+    const { error } = await owner.client.from("property_members").insert({
+      property_id: property.id,
+      user_id: stranger.id,
+      invited_by: owner.id,
+    });
     expect(error).not.toBeNull();
     expect(error!.code).toBe("42501");
   });
@@ -86,28 +107,43 @@ describe("multi-owner RLS and invite flow", () => {
       try {
         const { data: invite, error: inviteErr } = await owner.client
           .from("property_invites")
-          .insert({ property_id: property.id, email: invitee.email, invited_by: owner.id })
+          .insert({
+            property_id: property.id,
+            email: invitee.email,
+            invited_by: owner.id,
+          })
           .select("token")
           .single();
         if (inviteErr) throw inviteErr;
 
-        const { data: before } = await invitee.client.from("properties").select("id").eq("id", property.id);
+        const { data: before } = await invitee.client
+          .from("properties")
+          .select("id")
+          .eq("id", property.id);
         expect(before).toEqual([]);
 
-        const { data: acceptedPropertyId, error: acceptErr } = await invitee.client.rpc(
-          "accept_property_invite",
-          { p_token: invite!.token },
-        );
+        const { data: acceptedPropertyId, error: acceptErr } =
+          await invitee.client.rpc("accept_property_invite", {
+            p_token: invite!.token,
+          });
         expect(acceptErr).toBeNull();
         expect(acceptedPropertyId).toBe(property.id);
 
-        const { data: after } = await invitee.client.from("properties").select("id").eq("id", property.id);
+        const { data: after } = await invitee.client
+          .from("properties")
+          .select("id")
+          .eq("id", property.id);
         expect(after).toHaveLength(1);
 
-        const { data: members } = await invitee.client.rpc("property_members_with_email", {
-          p_property_id: property.id,
-        });
-        expect(members!.map((m) => m.email).sort()).toEqual([invitee.email, owner.email].sort());
+        const { data: members } = await invitee.client.rpc(
+          "property_members_with_email",
+          {
+            p_property_id: property.id,
+          },
+        );
+        expect(members!.map((m) => m.email).sort()).toEqual(
+          [invitee.email, owner.email].sort(),
+        );
       } finally {
         await deleteTestUser(invitee.id);
       }
@@ -117,18 +153,28 @@ describe("multi-owner RLS and invite flow", () => {
       const property = await ownedProperty();
       const { data: invite, error } = await owner.client
         .from("property_invites")
-        .insert({ property_id: property.id, email: "someone-else@example.test", invited_by: owner.id })
+        .insert({
+          property_id: property.id,
+          email: "someone-else@example.test",
+          invited_by: owner.id,
+        })
         .select("token")
         .single();
       if (error) throw error;
 
-      const { error: acceptErr } = await stranger.client.rpc("accept_property_invite", {
-        p_token: invite!.token,
-      });
+      const { error: acceptErr } = await stranger.client.rpc(
+        "accept_property_invite",
+        {
+          p_token: invite!.token,
+        },
+      );
       expect(acceptErr).not.toBeNull();
       expect(acceptErr!.message).toMatch(/different email/i);
 
-      const { data: props } = await stranger.client.from("properties").select("id").eq("id", property.id);
+      const { data: props } = await stranger.client
+        .from("properties")
+        .select("id")
+        .eq("id", property.id);
       expect(props).toEqual([]);
     });
 
@@ -150,11 +196,16 @@ describe("multi-owner RLS and invite flow", () => {
           .single();
         if (error) throw error;
 
-        const { error: acceptErr } = await invitee.client.rpc("accept_property_invite", {
-          p_token: invite!.token,
-        });
+        const { error: acceptErr } = await invitee.client.rpc(
+          "accept_property_invite",
+          {
+            p_token: invite!.token,
+          },
+        );
         expect(acceptErr).not.toBeNull();
-        expect(acceptErr!.message).toMatch(/invalid, expired, or already used/i);
+        expect(acceptErr!.message).toMatch(
+          /invalid, expired, or already used/i,
+        );
       } finally {
         await deleteTestUser(invitee.id);
       }
@@ -166,15 +217,23 @@ describe("multi-owner RLS and invite flow", () => {
       try {
         const { data: invite, error } = await owner.client
           .from("property_invites")
-          .insert({ property_id: property.id, email: invitee.email, invited_by: owner.id })
+          .insert({
+            property_id: property.id,
+            email: invitee.email,
+            invited_by: owner.id,
+          })
           .select("token")
           .single();
         if (error) throw error;
 
-        const first = await invitee.client.rpc("accept_property_invite", { p_token: invite!.token });
+        const first = await invitee.client.rpc("accept_property_invite", {
+          p_token: invite!.token,
+        });
         expect(first.error).toBeNull();
 
-        const second = await invitee.client.rpc("accept_property_invite", { p_token: invite!.token });
+        const second = await invitee.client.rpc("accept_property_invite", {
+          p_token: invite!.token,
+        });
         expect(second.error).not.toBeNull();
       } finally {
         await deleteTestUser(invitee.id);
@@ -187,7 +246,11 @@ describe("multi-owner RLS and invite flow", () => {
       try {
         const { data: invite, error } = await owner.client
           .from("property_invites")
-          .insert({ property_id: property.id, email: invitee.email, invited_by: owner.id })
+          .insert({
+            property_id: property.id,
+            email: invitee.email,
+            invited_by: owner.id,
+          })
           .select("id, token")
           .single();
         if (error) throw error;
@@ -198,9 +261,12 @@ describe("multi-owner RLS and invite flow", () => {
           .eq("id", invite!.id);
         expect(revokeErr).toBeNull();
 
-        const { error: acceptErr } = await invitee.client.rpc("accept_property_invite", {
-          p_token: invite!.token,
-        });
+        const { error: acceptErr } = await invitee.client.rpc(
+          "accept_property_invite",
+          {
+            p_token: invite!.token,
+          },
+        );
         expect(acceptErr).not.toBeNull();
       } finally {
         await deleteTestUser(invitee.id);

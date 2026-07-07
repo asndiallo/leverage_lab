@@ -25,20 +25,22 @@ export function PropertyCard({
   const net = monthlyNetCents ?? 0;
   return (
     <Link href={`/properties/${property.id}`} className="group block">
-      <Card className="p-5 transition-colors group-hover:border-primary/50">
+      <Card className="group-hover:border-primary/50 p-5 transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="font-medium">{property.address}</div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               {property.city}, {property.state} {property.zip}
             </div>
           </div>
-          <Badge variant={statusVariant[property.status]}>{property.status}</Badge>
+          <Badge variant={statusVariant[property.status]}>
+            {property.status}
+          </Badge>
         </div>
 
         <div className="mt-4 flex items-end justify-between">
           <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
+            <div className="text-muted-foreground text-xs tracking-wide uppercase">
               Monthly cash flow
             </div>
             <div
@@ -51,8 +53,12 @@ export function PropertyCard({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Cash invested</div>
-            <div className="font-mono text-lg font-semibold tabular-nums">{money(cashInvestedCents)}</div>
+            <div className="text-muted-foreground text-xs tracking-wide uppercase">
+              Cash invested
+            </div>
+            <div className="font-mono text-lg font-semibold tabular-nums">
+              {money(cashInvestedCents)}
+            </div>
           </div>
         </div>
 

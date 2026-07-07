@@ -54,7 +54,9 @@ export async function addTransaction(
   return { ok: true };
 }
 
-const updateTransactionSchema = transactionSchema.extend({ id: z.string().uuid() });
+const updateTransactionSchema = transactionSchema.extend({
+  id: z.string().uuid(),
+});
 
 export async function updateTransaction(
   _prev: ActionState,
@@ -122,7 +124,9 @@ export async function deleteTransactions(
   if (!auth.ok) return { error: auth.error };
   const { supabase } = auth;
 
-  const ids = String(formData.get("transaction_ids") ?? "").split(",").filter(Boolean);
+  const ids = String(formData.get("transaction_ids") ?? "")
+    .split(",")
+    .filter(Boolean);
   const propertyId = String(formData.get("property_id") ?? "");
   if (ids.length === 0) return { error: "No transactions selected" };
 

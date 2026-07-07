@@ -23,7 +23,10 @@ const leaseSchema = z
     message: "Lease end must be on or after the start date",
   });
 
-export async function addLease(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function addLease(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase, user } = auth;

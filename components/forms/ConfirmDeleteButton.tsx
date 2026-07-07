@@ -77,7 +77,11 @@ export function ConfirmDeleteButton({
             <span className="sr-only">{triggerLabel}</span>
           </Button>
         ) : (
-          <Button type="button" variant="outline" className="text-destructive hover:text-destructive">
+          <Button
+            type="button"
+            variant="outline"
+            className="text-destructive hover:text-destructive"
+          >
             <Trash2 className="size-4" />
             {triggerLabel}
           </Button>
@@ -92,7 +96,9 @@ export function ConfirmDeleteButton({
             <AlertDialogTitle>{title}</AlertDialogTitle>
             <AlertDialogDescription>{description}</AlertDialogDescription>
           </AlertDialogHeader>
-          {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+          {state.error && (
+            <p className="text-destructive text-sm">{state.error}</p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
             <ConfirmSubmitButton label={triggerLabel} />

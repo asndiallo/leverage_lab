@@ -12,7 +12,8 @@ export function DocumentPreview({
   controls?: React.ReactNode;
 }) {
   const isPdf =
-    doc.mime_type === "application/pdf" || doc.file_name.toLowerCase().endsWith(".pdf");
+    doc.mime_type === "application/pdf" ||
+    doc.file_name.toLowerCase().endsWith(".pdf");
 
   return (
     <Card className="gap-0 overflow-hidden p-0">
@@ -23,7 +24,12 @@ export function DocumentPreview({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {url && (
-            <a href={url} target="_blank" rel="noreferrer" className="text-sm font-medium text-primary hover:underline">
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary text-sm font-medium hover:underline"
+            >
               Open
             </a>
           )}
@@ -31,12 +37,22 @@ export function DocumentPreview({
         </div>
       </div>
       {!url ? (
-        <div className="px-4 py-6 text-sm text-muted-foreground">Preview unavailable.</div>
+        <div className="text-muted-foreground px-4 py-6 text-sm">
+          Preview unavailable.
+        </div>
       ) : isPdf ? (
-        <iframe src={url} title={doc.file_name} className="h-[600px] w-full bg-white" />
+        <iframe
+          src={url}
+          title={doc.file_name}
+          className="h-[600px] w-full bg-white"
+        />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt={doc.file_name} className="max-h-[600px] w-full bg-white object-contain" />
+        <img
+          src={url}
+          alt={doc.file_name}
+          className="max-h-[600px] w-full bg-white object-contain"
+        />
       )}
     </Card>
   );

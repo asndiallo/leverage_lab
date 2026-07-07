@@ -41,10 +41,18 @@ export function FormDialogButton({
   }, [state]);
 
   return (
-    <FormDialog open={open} onOpenChange={setOpen} title={title} description={description} trigger={trigger}>
+    <FormDialog
+      open={open}
+      onOpenChange={setOpen}
+      title={title}
+      description={description}
+      trigger={trigger}
+    >
       <form ref={ref} action={formAction} className="space-y-4">
         {children}
-        {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+        {state.error && (
+          <p className="text-destructive text-sm">{state.error}</p>
+        )}
         <div className="flex items-center justify-end gap-3">
           <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
             {cancelLabel}

@@ -16,7 +16,9 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
@@ -35,7 +37,10 @@ export async function updateSession(request: NextRequest) {
   // /invites/[token] handles its own auth check (redirecting to /login with a
   // `next` back to itself) — it must NOT be caught here first, since this
   // middleware's redirect strips the query string and would lose the token.
-  const isPublic = path === "/login" || path.startsWith("/auth") || path.startsWith("/invites");
+  const isPublic =
+    path === "/login" ||
+    path.startsWith("/auth") ||
+    path.startsWith("/invites");
 
   // Unauthenticated → send to login (except on public routes). Clear the query
   // string so stray params (e.g. a leftover OAuth `code`) never ride along.

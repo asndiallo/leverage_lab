@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
+import {
+  createTestUser,
+  deleteTestUser,
+  type TestUser,
+} from "../setup/supabase";
 import {
   createTestProperty,
   createTestJurisdiction,
@@ -47,12 +51,20 @@ describe("tax engine", () => {
         source: "county_record",
       });
 
-      const isd = await createTestJurisdiction(user.client, user.id, propertyId, {
-        name: "Test ISD",
-        jurisdiction_type: "isd",
-      });
+      const isd = await createTestJurisdiction(
+        user.client,
+        user.id,
+        propertyId,
+        {
+          name: "Test ISD",
+          jurisdiction_type: "isd",
+        },
+      );
       jIsd = isd.id;
-      await createTestTaxRate(user.client, user.id, jIsd, { tax_year: 2026, rate: 0.0119 });
+      await createTestTaxRate(user.client, user.id, jIsd, {
+        tax_year: 2026,
+        rate: 0.0119,
+      });
       await createTestExemption(user.client, user.id, propertyId, jIsd, {
         exemption_type: "homestead",
         calc_method: "flat_amount",
@@ -62,12 +74,20 @@ describe("tax engine", () => {
         applied: true,
       });
 
-      const county = await createTestJurisdiction(user.client, user.id, propertyId, {
-        name: "Test County",
-        jurisdiction_type: "county",
-      });
+      const county = await createTestJurisdiction(
+        user.client,
+        user.id,
+        propertyId,
+        {
+          name: "Test County",
+          jurisdiction_type: "county",
+        },
+      );
       jCounty = county.id;
-      await createTestTaxRate(user.client, user.id, jCounty, { tax_year: 2026, rate: 0.005 });
+      await createTestTaxRate(user.client, user.id, jCounty, {
+        tax_year: 2026,
+        rate: 0.005,
+      });
       await createTestExemption(user.client, user.id, propertyId, jCounty, {
         exemption_type: "homestead",
         calc_method: "percent_of_assessed",
@@ -78,12 +98,20 @@ describe("tax engine", () => {
         applied: true,
       });
 
-      const roads = await createTestJurisdiction(user.client, user.id, propertyId, {
-        name: "Test Lateral Roads",
-        jurisdiction_type: "other",
-      });
+      const roads = await createTestJurisdiction(
+        user.client,
+        user.id,
+        propertyId,
+        {
+          name: "Test Lateral Roads",
+          jurisdiction_type: "other",
+        },
+      );
       jRoads = roads.id;
-      await createTestTaxRate(user.client, user.id, jRoads, { tax_year: 2026, rate: 0.001 });
+      await createTestTaxRate(user.client, user.id, jRoads, {
+        tax_year: 2026,
+        rate: 0.001,
+      });
       await createTestExemption(user.client, user.id, propertyId, jRoads, {
         exemption_type: "other",
         calc_method: "percent_of_assessed",
@@ -93,12 +121,20 @@ describe("tax engine", () => {
         applied: true,
       });
 
-      const mud = await createTestJurisdiction(user.client, user.id, propertyId, {
-        name: "Test MUD",
-        jurisdiction_type: "mud",
-      });
+      const mud = await createTestJurisdiction(
+        user.client,
+        user.id,
+        propertyId,
+        {
+          name: "Test MUD",
+          jurisdiction_type: "mud",
+        },
+      );
       jMud = mud.id;
-      await createTestTaxRate(user.client, user.id, jMud, { tax_year: 2026, rate: 0.0002 });
+      await createTestTaxRate(user.client, user.id, jMud, {
+        tax_year: 2026,
+        rate: 0.0002,
+      });
       // no exemption for MUD
 
       // Excluded rows: unapplied and future-effective, must NOT reduce the MUD bill.
@@ -172,19 +208,28 @@ describe("tax engine", () => {
     });
 
     it("sums every jurisdiction into the annual total, matching the breakdown sum", async () => {
-      const { data: annual, error: e1 } = await user.client.rpc("property_annual_tax_cents", {
-        p_property_id: propertyId,
-        p_tax_year: 2026,
-      });
+      const { data: annual, error: e1 } = await user.client.rpc(
+        "property_annual_tax_cents",
+        {
+          p_property_id: propertyId,
+          p_tax_year: 2026,
+        },
+      );
       if (e1) throw e1;
       expect(annual).toBe(190_400 + 147_500 + 29_400 + 6_000);
 
-      const { data: breakdown, error: e2 } = await user.client.rpc("property_tax_breakdown", {
-        p_property_id: propertyId,
-        p_tax_year: 2026,
-      });
+      const { data: breakdown, error: e2 } = await user.client.rpc(
+        "property_tax_breakdown",
+        {
+          p_property_id: propertyId,
+          p_tax_year: 2026,
+        },
+      );
       if (e2) throw e2;
-      const breakdownTotal = breakdown!.reduce((sum, r) => sum + r.tax_cents, 0);
+      const breakdownTotal = breakdown!.reduce(
+        (sum, r) => sum + r.tax_cents,
+        0,
+      );
       expect(breakdownTotal).toBe(annual);
     });
   });
@@ -205,8 +250,13 @@ describe("tax engine", () => {
         tax_year: 2026,
         total_assessed_cents: 30_000_000,
       });
-      const j = await createTestJurisdiction(user.client, user.id, propertyId, { name: "Test ISD" });
-      await createTestTaxRate(user.client, user.id, j.id, { tax_year: 2026, rate: 0.02 });
+      const j = await createTestJurisdiction(user.client, user.id, propertyId, {
+        name: "Test ISD",
+      });
+      await createTestTaxRate(user.client, user.id, j.id, {
+        tax_year: 2026,
+        rate: 0.02,
+      });
       await createTestExemption(user.client, user.id, propertyId, j.id, {
         exemption_type: "homestead",
         calc_method: "flat_amount",
@@ -222,19 +272,25 @@ describe("tax engine", () => {
     });
 
     it("does NOT apply the exemption in the real (current) tax total", async () => {
-      const { data, error } = await user.client.rpc("property_annual_tax_cents", {
-        p_property_id: propertyId,
-        p_tax_year: 2026,
-      });
+      const { data, error } = await user.client.rpc(
+        "property_annual_tax_cents",
+        {
+          p_property_id: propertyId,
+          p_tax_year: 2026,
+        },
+      );
       if (error) throw error;
       expect(data).toBe(600_000); // 30,000,000 * 0.02, no exemption
     });
 
     it("DOES apply the exemption in the hypothetical with-homestead total", async () => {
-      const { data, error } = await user.client.rpc("property_tax_with_homestead_cents", {
-        p_property_id: propertyId,
-        p_tax_year: 2026,
-      });
+      const { data, error } = await user.client.rpc(
+        "property_tax_with_homestead_cents",
+        {
+          p_property_id: propertyId,
+          p_tax_year: 2026,
+        },
+      );
       if (error) throw error;
       expect(data).toBe(400_000); // (30,000,000 - 10,000,000) * 0.02
     });
@@ -248,8 +304,13 @@ describe("tax engine", () => {
         purchase_price_cents: 40_000_000,
       });
       propertyId = property.id;
-      const j = await createTestJurisdiction(user.client, user.id, propertyId, { name: "Test ISD" });
-      await createTestTaxRate(user.client, user.id, j.id, { tax_year: 2026, rate: 0.01 });
+      const j = await createTestJurisdiction(user.client, user.id, propertyId, {
+        name: "Test ISD",
+      });
+      await createTestTaxRate(user.client, user.id, j.id, {
+        tax_year: 2026,
+        rate: 0.01,
+      });
     });
 
     afterAll(async () => {
@@ -262,10 +323,13 @@ describe("tax engine", () => {
         total_assessed_cents: 40_000_000,
         capped_assessed_cents: 33_000_000,
       });
-      const { data, error } = await user.client.rpc("property_annual_tax_cents", {
-        p_property_id: propertyId,
-        p_tax_year: 2026,
-      });
+      const { data, error } = await user.client.rpc(
+        "property_annual_tax_cents",
+        {
+          p_property_id: propertyId,
+          p_tax_year: 2026,
+        },
+      );
       if (error) throw error;
       expect(data).toBe(330_000); // 33,000,000 * 0.01, not 40,000,000
     });

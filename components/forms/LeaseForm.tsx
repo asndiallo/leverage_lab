@@ -7,7 +7,13 @@ import { FormDialogButton } from "./FormDialogButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function LeaseForm({ propertyId }: { propertyId: string }) {
   return (
@@ -34,7 +40,13 @@ export function LeaseForm({ propertyId }: { propertyId: string }) {
           <Input name="tenant_email" type="email" />
         </Field>
         <Field label="Monthly rent ($)">
-          <Input name="rent_amount" type="number" step="0.01" min="0" required />
+          <Input
+            name="rent_amount"
+            type="number"
+            step="0.01"
+            min="0"
+            required
+          />
         </Field>
         <Field label="Lease start">
           <Input name="lease_start" type="date" required />
@@ -43,7 +55,13 @@ export function LeaseForm({ propertyId }: { propertyId: string }) {
           <Input name="lease_end" type="date" />
         </Field>
         <Field label="Flat utility charge ($)">
-          <Input name="flat_utility_charge" type="number" step="0.01" min="0" defaultValue="0" />
+          <Input
+            name="flat_utility_charge"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue="0"
+          />
         </Field>
         <Field label="Status">
           <Select name="status" defaultValue="active">
@@ -58,7 +76,7 @@ export function LeaseForm({ propertyId }: { propertyId: string }) {
           </Select>
         </Field>
       </div>
-      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+      <label className="text-muted-foreground flex items-center gap-2 text-sm">
         <Checkbox name="utilities_included" /> Utilities included in rent
       </label>
     </FormDialogButton>

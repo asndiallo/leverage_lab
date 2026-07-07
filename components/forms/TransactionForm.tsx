@@ -8,7 +8,13 @@ import { CategorySelect, type CategoryOption } from "./CategorySelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function TransactionForm({
   propertyId,
@@ -56,8 +62,9 @@ export function TransactionForm({
           <Input name="description" />
         </Field>
       </div>
-      <label className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Checkbox name="is_estimate" /> This is an estimate (projected, not actual)
+      <label className="text-muted-foreground flex items-center gap-2 text-sm">
+        <Checkbox name="is_estimate" /> This is an estimate (projected, not
+        actual)
       </label>
     </FormDialogButton>
   );

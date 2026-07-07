@@ -35,7 +35,10 @@ export function moneySigned(cents: number | null | undefined): string {
 }
 
 /** numeric fraction -> "5.19%" (rate is already a fraction, e.g. 0.0519) */
-export function percent(fraction: number | null | undefined, digits = 2): string {
+export function percent(
+  fraction: number | null | undefined,
+  digits = 2,
+): string {
   if (fraction == null) return "—";
   return `${(fraction * 100).toFixed(digits)}%`;
 }
@@ -56,7 +59,11 @@ export function dateLabel(d: string | Date | null | undefined): string {
   if (!d) return "—";
   const date =
     typeof d === "string" ? new Date(/[TZ]/.test(d) ? d : d + "T00:00:00") : d;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 /** bytes -> "148 KB" */
@@ -80,7 +87,10 @@ export function laterMonthISO(a: string, b: string): string {
 
 /** dollars string/number -> integer cents (for form submission). */
 export function dollarsToCents(dollars: string | number): number {
-  const n = typeof dollars === "string" ? Number(dollars.replace(/[^0-9.-]/g, "")) : dollars;
+  const n =
+    typeof dollars === "string"
+      ? Number(dollars.replace(/[^0-9.-]/g, ""))
+      : dollars;
   if (!Number.isFinite(n)) return 0;
   return Math.round(n * 100);
 }

@@ -6,7 +6,12 @@ import { firstError, requireUser } from "./shared";
 import type { ActionState } from "@/lib/action-types";
 
 const BUCKET = "documents";
-const ALLOWED_MIME = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+const ALLOWED_MIME = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
 
 const documentSchema = z.object({
   property_id: z.string().uuid(),
@@ -25,13 +30,17 @@ const documentSchema = z.object({
   title: z.string().optional().or(z.literal("")),
 });
 
-export async function uploadDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function uploadDocument(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase, user } = auth;
 
   const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) return { error: "Choose a file to upload" };
+  if (!(file instanceof File) || file.size === 0)
+    return { error: "Choose a file to upload" };
   if (file.size > 15 * 1024 * 1024) return { error: "File exceeds 15 MB" };
   if (file.type && !ALLOWED_MIME.includes(file.type))
     return { error: "Only PDF or image files are allowed" };
@@ -84,11 +93,17 @@ export async function uploadDocument(_prev: ActionState, formData: FormData): Pr
 
   revalidatePath("/documents");
   revalidatePath(`/properties/${v.property_id}`);
-  if (v.transaction_id) revalidatePath(`/properties/${v.property_id}/transactions/${v.transaction_id}`);
+  if (v.transaction_id)
+    revalidatePath(
+      `/properties/${v.property_id}/transactions/${v.transaction_id}`,
+    );
   return { ok: true };
 }
 
-export async function linkDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function linkDocument(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase, user } = auth;
@@ -96,7 +111,8 @@ export async function linkDocument(_prev: ActionState, formData: FormData): Prom
   const documentId = String(formData.get("document_id") ?? "");
   const transactionId = String(formData.get("transaction_id") ?? "");
   const propertyId = String(formData.get("property_id") ?? "");
-  if (!documentId || !transactionId) return { error: "Choose a document to link" };
+  if (!documentId || !transactionId)
+    return { error: "Choose a document to link" };
 
   const { error } = await supabase.from("document_links").insert({
     user_id: user.id,
@@ -109,13 +125,19 @@ export async function linkDocument(_prev: ActionState, formData: FormData): Prom
   return { ok: true };
 }
 
-export async function unlinkDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function unlinkDocument(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase } = auth;
 
   const linkId = String(formData.get("link_id") ?? "");
-  const { error } = await supabase.from("document_links").delete().eq("id", linkId);
+  const { error } = await supabase
+    .from("document_links")
+    .delete()
+    .eq("id", linkId);
   if (error) return { error: error.message };
 
   const propertyId = String(formData.get("property_id") ?? "");
@@ -125,7 +147,10 @@ export async function unlinkDocument(_prev: ActionState, formData: FormData): Pr
   return { ok: true };
 }
 
-export async function deleteDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function deleteDocument(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase } = auth;
@@ -141,7 +166,10 @@ export async function deleteDocument(_prev: ActionState, formData: FormData): Pr
 
   await supabase.storage.from(BUCKET).remove([doc.storage_path]);
   // document_links rows cascade-delete via FK.
-  const { error: dErr } = await supabase.from("documents").delete().eq("id", id);
+  const { error: dErr } = await supabase
+    .from("documents")
+    .delete()
+    .eq("id", id);
   if (dErr) return { error: dErr.message };
 
   revalidatePath("/documents");
@@ -149,12 +177,17 @@ export async function deleteDocument(_prev: ActionState, formData: FormData): Pr
   return { ok: true };
 }
 
-export async function deleteDocuments(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function deleteDocuments(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase } = auth;
 
-  const ids = String(formData.get("document_ids") ?? "").split(",").filter(Boolean);
+  const ids = String(formData.get("document_ids") ?? "")
+    .split(",")
+    .filter(Boolean);
   if (ids.length === 0) return { error: "No documents selected" };
 
   const { data: docs, error: fErr } = await supabase
@@ -166,7 +199,10 @@ export async function deleteDocuments(_prev: ActionState, formData: FormData): P
 
   await supabase.storage.from(BUCKET).remove(docs.map((d) => d.storage_path));
   // document_links rows cascade-delete via FK.
-  const { error: dErr } = await supabase.from("documents").delete().in("id", ids);
+  const { error: dErr } = await supabase
+    .from("documents")
+    .delete()
+    .in("id", ids);
   if (dErr) return { error: dErr.message };
 
   revalidatePath("/documents");

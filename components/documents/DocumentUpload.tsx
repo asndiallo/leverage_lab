@@ -6,7 +6,13 @@ import { Field } from "@/components/forms/formPrimitives";
 import { FormDialogButton } from "@/components/forms/FormDialogButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DOCUMENT_TYPES } from "@/lib/constants";
 import type { DocumentType } from "@/types/database";
 
@@ -35,8 +41,12 @@ export function DocumentUpload({
         </Button>
       }
     >
-      {propertyId && <input type="hidden" name="property_id" value={propertyId} />}
-      {transactionId && <input type="hidden" name="transaction_id" value={transactionId} />}
+      {propertyId && (
+        <input type="hidden" name="property_id" value={propertyId} />
+      )}
+      {transactionId && (
+        <input type="hidden" name="transaction_id" value={transactionId} />
+      )}
 
       {!propertyId && properties && (
         <Field label="Property">
@@ -56,7 +66,13 @@ export function DocumentUpload({
       )}
 
       <Field label="File (PDF or image)">
-        <Input type="file" name="file" accept="application/pdf,image/*" required className="pt-1.5" />
+        <Input
+          type="file"
+          name="file"
+          accept="application/pdf,image/*"
+          required
+          className="pt-1.5"
+        />
       </Field>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Type">

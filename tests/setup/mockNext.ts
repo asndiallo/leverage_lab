@@ -15,7 +15,8 @@ const state: { cookie: CookieEntry | null; headers: Record<string, string> } = {
 vi.mock("next/headers", () => ({
   cookies: () => ({
     getAll: () => (state.cookie ? [state.cookie] : []),
-    get: (name: string) => (state.cookie?.name === name ? state.cookie : undefined),
+    get: (name: string) =>
+      state.cookie?.name === name ? state.cookie : undefined,
     set: () => {},
   }),
   headers: () => ({

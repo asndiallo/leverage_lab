@@ -23,9 +23,20 @@ export function StatTile({
 }) {
   return (
     <Card className="gap-1 px-4 py-3.5">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={cn("font-mono text-xl font-semibold tabular-nums", tones[tone])}>{value}</div>
-      {sub != null && <div className="text-xs text-muted-foreground">{sub}</div>}
+      <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+        {label}
+      </div>
+      <div
+        className={cn(
+          "font-mono text-xl font-semibold tabular-nums",
+          tones[tone],
+        )}
+      >
+        {value}
+      </div>
+      {sub != null && (
+        <div className="text-muted-foreground text-xs">{sub}</div>
+      )}
     </Card>
   );
 }

@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
+import {
+  createTestUser,
+  deleteTestUser,
+  type TestUser,
+} from "../setup/supabase";
 
 // mortgage_monthly_pi is a pure SQL function (no table access) but still
 // requires an authenticated role per its grant, so we still need a signed-in
@@ -15,7 +19,11 @@ describe("mortgage_monthly_pi", () => {
     await deleteTestUser(user.id);
   });
 
-  async function pi(principalCents: number, annualRate: number, termMonths: number) {
+  async function pi(
+    principalCents: number,
+    annualRate: number,
+    termMonths: number,
+  ) {
     const { data, error } = await user.client.rpc("mortgage_monthly_pi", {
       p_principal_cents: principalCents,
       p_annual_rate: annualRate,

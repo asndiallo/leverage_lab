@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Transaction, CategoryGroup, TransactionDirection } from "@/types/database";
+import type {
+  Transaction,
+  CategoryGroup,
+  TransactionDirection,
+} from "@/types/database";
 
 // A transaction joined to its category metadata (group/direction/label).
 export type TransactionWithCategory = Transaction & {
@@ -22,7 +26,9 @@ export async function getCategories(): Promise<
   return data ?? [];
 }
 
-export async function getTransactions(id: string): Promise<TransactionWithCategory[]> {
+export async function getTransactions(
+  id: string,
+): Promise<TransactionWithCategory[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("transactions")
@@ -33,7 +39,9 @@ export async function getTransactions(id: string): Promise<TransactionWithCatego
   return (data as unknown as TransactionWithCategory[]) ?? [];
 }
 
-export async function getTransaction(txnId: string): Promise<TransactionWithCategory | null> {
+export async function getTransaction(
+  txnId: string,
+): Promise<TransactionWithCategory | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("transactions")

@@ -48,7 +48,13 @@ export function NewPropertyForm() {
           <Input name="parcel_id" />
         </Field>
         <Field label="Purchase price ($)">
-          <Input name="purchase_price" type="number" step="0.01" min="0" required />
+          <Input
+            name="purchase_price"
+            type="number"
+            step="0.01"
+            min="0"
+            required
+          />
         </Field>
         <Field label="Purchase date">
           <Input name="purchase_date" type="date" required />
@@ -59,13 +65,19 @@ export function NewPropertyForm() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {["single_family", "duplex", "triplex", "fourplex", "townhouse", "condo", "other"].map(
-                (t) => (
-                  <SelectItem key={t} value={t}>
-                    {t.replace(/_/g, " ")}
-                  </SelectItem>
-                ),
-              )}
+              {[
+                "single_family",
+                "duplex",
+                "triplex",
+                "fourplex",
+                "townhouse",
+                "condo",
+                "other",
+              ].map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Field>
@@ -85,7 +97,7 @@ export function NewPropertyForm() {
 
       <Separator />
       <div>
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
           Loan (optional)
         </div>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -99,7 +111,13 @@ export function NewPropertyForm() {
             <Input name="interest_rate" type="number" step="0.0001" min="0" />
           </Field>
           <Field label="Term (years)">
-            <Input name="term_years" type="number" step="1" min="1" defaultValue="30" />
+            <Input
+              name="term_years"
+              type="number"
+              step="1"
+              min="1"
+              defaultValue="30"
+            />
           </Field>
           <Field label="Funding date">
             <Input name="funding_date" type="date" />

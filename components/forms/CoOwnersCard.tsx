@@ -33,13 +33,24 @@ function CopyButton({ url }: { url: string }) {
   );
 }
 
-function RevokeInviteButton({ inviteId, propertyId }: { inviteId: string; propertyId: string }) {
+function RevokeInviteButton({
+  inviteId,
+  propertyId,
+}: {
+  inviteId: string;
+  propertyId: string;
+}) {
   const [, action] = useFormState(revokeInvite, emptyActionState);
   return (
     <form action={action}>
       <input type="hidden" name="invite_id" value={inviteId} />
       <input type="hidden" name="property_id" value={propertyId} />
-      <Button type="submit" variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+      <Button
+        type="submit"
+        variant="ghost"
+        size="sm"
+        className="text-destructive hover:text-destructive"
+      >
         <X className="size-3.5" />
         Revoke
       </Button>
@@ -83,21 +94,34 @@ export function CoOwnersCard({
           <form ref={ref} action={action} className="space-y-4">
             <input type="hidden" name="property_id" value={propertyId} />
             <Field label="Email">
-              <Input name="email" type="email" required placeholder="spouse@example.com" />
+              <Input
+                name="email"
+                type="email"
+                required
+                placeholder="spouse@example.com"
+              />
             </Field>
-            {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+            {state.error && (
+              <p className="text-destructive text-sm">{state.error}</p>
+            )}
             {state.inviteUrl && (
-              <div className="rounded-lg border bg-muted/40 p-3 text-sm">
-                Invite created. There&apos;s no automated invite email yet — copy this
-                link and send it to them yourself.
+              <div className="bg-muted/40 rounded-lg border p-3 text-sm">
+                Invite created. There&apos;s no automated invite email yet —
+                copy this link and send it to them yourself.
                 <div className="mt-2 flex items-center gap-2">
-                  <code className="flex-1 truncate text-xs">{state.inviteUrl}</code>
+                  <code className="flex-1 truncate text-xs">
+                    {state.inviteUrl}
+                  </code>
                   <CopyButton url={state.inviteUrl} />
                 </div>
               </div>
             )}
             <div className="flex items-center justify-end gap-3">
-              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+              >
                 Close
               </Button>
               <SubmitButton label="Create invite" />
@@ -109,7 +133,7 @@ export function CoOwnersCard({
       <ul className="mt-3 space-y-1.5">
         {members.map((m) => (
           <li key={m.user_id} className="flex items-center gap-2 text-sm">
-            <Mail className="size-3.5 text-muted-foreground" />
+            <Mail className="text-muted-foreground size-3.5" />
             {m.email}
           </li>
         ))}
@@ -117,17 +141,31 @@ export function CoOwnersCard({
 
       {pendingInvites.length > 0 && (
         <div className="mt-4 border-t pt-3">
-          <p className="text-xs font-medium text-muted-foreground">Pending invites</p>
+          <p className="text-muted-foreground text-xs font-medium">
+            Pending invites
+          </p>
           <ul className="mt-1.5 space-y-1.5">
             {pendingInvites.map((inv) => (
-              <li key={inv.id} className="flex items-center justify-between gap-2 text-sm">
+              <li
+                key={inv.id}
+                className="flex items-center justify-between gap-2 text-sm"
+              >
                 <span className="flex items-center gap-2">
                   <Badge variant="warn">pending</Badge>
                   {inv.email}
                 </span>
                 <span className="flex items-center gap-1">
-                  <CopyButton url={typeof window !== "undefined" ? `${window.location.origin}/invites/${inv.token}` : ""} />
-                  <RevokeInviteButton inviteId={inv.id} propertyId={propertyId} />
+                  <CopyButton
+                    url={
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}/invites/${inv.token}`
+                        : ""
+                    }
+                  />
+                  <RevokeInviteButton
+                    inviteId={inv.id}
+                    propertyId={propertyId}
+                  />
                 </span>
               </li>
             ))}

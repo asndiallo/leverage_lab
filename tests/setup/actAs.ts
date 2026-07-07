@@ -9,7 +9,10 @@ export async function actAs(user: TestUser) {
     data: { session },
   } = await user.client.auth.getSession();
   if (!session) throw new Error(`actAs: ${user.email} has no active session`);
-  setSessionCookie({ name: AUTH_COOKIE_NAME, value: sessionToCookieValue(session) });
+  setSessionCookie({
+    name: AUTH_COOKIE_NAME,
+    value: sessionToCookieValue(session),
+  });
 }
 
 export function actAsSignedOut() {

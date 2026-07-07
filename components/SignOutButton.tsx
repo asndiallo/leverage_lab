@@ -13,7 +13,12 @@ export default function SignOutButton() {
     router.refresh();
   }
   return (
-    <Button variant="ghost" size="sm" onClick={signOut} className="text-muted-foreground">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={signOut}
+      className="text-muted-foreground"
+    >
       <LogOut className="size-4" />
       Sign out
     </Button>

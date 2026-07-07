@@ -25,7 +25,8 @@ export function useSelection(visibleIds: string[]) {
     });
   }, []);
 
-  const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+  const allSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
 
   const toggleAll = useCallback(() => {
     setSelected(allSelected ? new Set() : new Set(visibleIds));

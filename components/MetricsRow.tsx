@@ -26,7 +26,11 @@ export function MetricsRow({
       />
       <StatTile label="Cash invested" value={money(cashInvestedCents)} />
       <StatTile label="Tax basis" value={money(taxBasisCents)} />
-      <StatTile label="Gross yield" value={percent(grossYield)} sub="Annual rent / price" />
+      <StatTile
+        label="Gross yield"
+        value={percent(grossYield)}
+        sub="Annual rent / price"
+      />
       <StatTile
         label="Property tax"
         value={money(annualTaxCents)}
