@@ -1,6 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
-import { createTestProperty, createTestTransaction, deleteTestProperty } from "../setup/fixtures";
+import {
+  createTestUser,
+  deleteTestUser,
+  type TestUser,
+} from "../setup/supabase";
+import {
+  createTestProperty,
+  createTestTransaction,
+  deleteTestProperty,
+} from "../setup/fixtures";
 
 // property_tax_basis_cents = purchase_price + capital improvements - seller credits.
 describe("property_tax_basis_cents", () => {
@@ -19,9 +27,12 @@ describe("property_tax_basis_cents", () => {
       purchase_price_cents: 30_000_000,
     });
     try {
-      const { data, error } = await user.client.rpc("property_tax_basis_cents", {
-        p_property_id: property.id,
-      });
+      const { data, error } = await user.client.rpc(
+        "property_tax_basis_cents",
+        {
+          p_property_id: property.id,
+        },
+      );
       if (error) throw error;
       expect(data).toBe(30_000_000);
     } finally {
@@ -51,9 +62,12 @@ describe("property_tax_basis_cents", () => {
         txn_date: "2026-02-01",
       });
 
-      const { data, error } = await user.client.rpc("property_tax_basis_cents", {
-        p_property_id: property.id,
-      });
+      const { data, error } = await user.client.rpc(
+        "property_tax_basis_cents",
+        {
+          p_property_id: property.id,
+        },
+      );
       if (error) throw error;
       expect(data).toBe(30_000_000 + 500_000 - 200_000);
     } finally {
@@ -77,9 +91,12 @@ describe("property_tax_basis_cents", () => {
         txn_date: "2026-02-15",
       });
 
-      const { data, error } = await user.client.rpc("property_tax_basis_cents", {
-        p_property_id: property.id,
-      });
+      const { data, error } = await user.client.rpc(
+        "property_tax_basis_cents",
+        {
+          p_property_id: property.id,
+        },
+      );
       if (error) throw error;
       expect(data).toBe(10_000_000 + 300_000 + 50_000);
     } finally {

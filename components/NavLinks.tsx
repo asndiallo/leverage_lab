@@ -22,7 +22,8 @@ export function NavLinks({
   return (
     <nav className={cn("flex items-center gap-1", className)}>
       {LINKS.map(({ href, label, icon: Icon }) => {
-        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        const active =
+          href === "/" ? pathname === "/" : pathname.startsWith(href);
         return (
           <Link
             key={href}

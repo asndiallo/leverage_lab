@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
+import {
+  createTestUser,
+  deleteTestUser,
+  type TestUser,
+} from "../setup/supabase";
 import {
   createTestProperty,
   createTestPropertySettings,

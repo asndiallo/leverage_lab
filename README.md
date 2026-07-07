@@ -131,5 +131,5 @@ Patterns worth reusing rather than re-implementing:
   `lib/hooks/useSelection.ts` for row selection and
   `components/forms/SortDirectionButton.tsx` for the asc/desc toggle.
 - **SQL**: the Texas tax exemption clamp — `clamp(flat + percent*base, min,
-  max)` — lives once in `exemption_amount_cents()` (migration 0005); every
+max)` — lives once in `exemption_amount_cents()` (migration 0005); every
   function touching exemptions calls it instead of carrying its own copy.

@@ -7,7 +7,7 @@ const OPTIONS = [12, 24, 60];
 // current path — no client hooks (useSearchParams) needed, so it SSRs cleanly.
 export function HorizonSelector({ current }: { current: number }) {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5">
+    <div className="bg-muted flex items-center gap-1 rounded-lg p-0.5">
       {OPTIONS.map((n) => (
         <Link
           key={n}

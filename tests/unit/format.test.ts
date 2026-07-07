@@ -70,7 +70,7 @@ describe("percent", () => {
 
 describe("taxRatePer100", () => {
   it("converts a per-dollar rate to a per-$100 display value", () => {
-    expect(taxRatePer100(0.0107690)).toBe("1.076900");
+    expect(taxRatePer100(0.010769)).toBe("1.076900");
   });
 });
 

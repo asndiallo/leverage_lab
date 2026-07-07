@@ -21,7 +21,11 @@ export async function getProperties(): Promise<Property[]> {
 
 export async function getProperty(id: string): Promise<Property | null> {
   const supabase = createClient();
-  const { data, error } = await supabase.from("properties").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -33,7 +37,9 @@ export async function getPortfolioYields(): Promise<PropertyYields[]> {
   return data ?? [];
 }
 
-export async function getPropertyYields(id: string): Promise<PropertyYields | null> {
+export async function getPropertyYields(
+  id: string,
+): Promise<PropertyYields | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("v_property_yields")

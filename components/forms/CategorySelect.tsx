@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/select";
 import type { CategoryGroup } from "@/types/database";
 
-export type CategoryOption = { code: string; label: string; category_group: CategoryGroup };
+export type CategoryOption = {
+  code: string;
+  label: string;
+  category_group: CategoryGroup;
+};
 
 const groupLabels: Record<CategoryGroup, string> = {
   income: "Income",

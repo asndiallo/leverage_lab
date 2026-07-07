@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createTestUser, deleteTestUser, type TestUser } from "../setup/supabase";
+import {
+  createTestUser,
+  deleteTestUser,
+  type TestUser,
+} from "../setup/supabase";
 import {
   createTestProperty,
   createTestLease,
@@ -93,7 +97,9 @@ describe("property_monthly_cashflow", () => {
       expect(cf.operating_expense_cents).toBe(25_000); // both rows, regardless of is_estimate
       expect(cf.vacancy_reserve_cents).toBe(7_500); // 150,000 * 5% default
       expect(cf.maintenance_reserve_cents).toBe(25_000); // 30,000,000 * 1% / 12
-      expect(cf.net_cashflow_cents).toBe(155_000 - 140_000 - 25_000 - 7_500 - 25_000);
+      expect(cf.net_cashflow_cents).toBe(
+        155_000 - 140_000 - 25_000 - 7_500 - 25_000,
+      );
     } finally {
       await deleteTestProperty(property.id);
     }

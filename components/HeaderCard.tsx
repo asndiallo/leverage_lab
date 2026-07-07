@@ -2,7 +2,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { money, percent, dateLabel } from "@/lib/format";
-import type { Property, Loan, LoanPayment, EscrowSchedule, PropertyStatus } from "@/types/database";
+import type {
+  Property,
+  Loan,
+  LoanPayment,
+  EscrowSchedule,
+  PropertyStatus,
+} from "@/types/database";
 
 const statusVariant: Record<PropertyStatus, "positive" | "warn" | "outline"> = {
   active: "positive",
@@ -34,26 +40,36 @@ export function HeaderCard({
     <Card className="p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{property.address}</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl font-semibold tracking-tight">
+            {property.address}
+          </h1>
+          <p className="text-muted-foreground text-sm">
             {property.city}, {property.state} {property.zip}
           </p>
           {property.cad_account && (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               CAD {property.cad_account}
               {property.parcel_id ? ` · Parcel ${property.parcel_id}` : ""}
             </p>
           )}
         </div>
-        <Badge variant={statusVariant[property.status]}>{property.status}</Badge>
+        <Badge variant={statusVariant[property.status]}>
+          {property.status}
+        </Badge>
       </div>
 
       <Separator className="my-4" />
 
       <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
         <div>
-          <Row label="Purchase price" value={money(property.purchase_price_cents)} />
-          <Row label="Purchase date" value={dateLabel(property.purchase_date)} />
+          <Row
+            label="Purchase price"
+            value={money(property.purchase_price_cents)}
+          />
+          <Row
+            label="Purchase date"
+            value={dateLabel(property.purchase_date)}
+          />
           {loan && (
             <>
               <Row label="Lender" value={loan.lender ?? "—"} />
@@ -65,11 +81,22 @@ export function HeaderCard({
           )}
         </div>
         <div>
-          {loanPayment && <Row label="Monthly P&I" value={money(loanPayment.monthly_pi_cents)} />}
+          {loanPayment && (
+            <Row
+              label="Monthly P&I"
+              value={money(loanPayment.monthly_pi_cents)}
+            />
+          )}
           {escrow && (
             <>
-              <Row label="Tax escrow" value={money(escrow.monthly_tax_escrow_cents)} />
-              <Row label="Insurance escrow" value={money(escrow.monthly_insurance_escrow_cents)} />
+              <Row
+                label="Tax escrow"
+                value={money(escrow.monthly_tax_escrow_cents)}
+              />
+              <Row
+                label="Insurance escrow"
+                value={money(escrow.monthly_insurance_escrow_cents)}
+              />
               {escrow.monthly_hoa_cents > 0 && (
                 <Row label="HOA" value={money(escrow.monthly_hoa_cents)} />
               )}

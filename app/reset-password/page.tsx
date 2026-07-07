@@ -32,8 +32,12 @@ export default function ResetPasswordPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-sm p-8">
-        <h1 className="text-xl font-semibold tracking-tight">Set a new password</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Choose a new password for your account.</p>
+        <h1 className="text-xl font-semibold tracking-tight">
+          Set a new password
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Choose a new password for your account.
+        </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <Field label="New password">
@@ -56,7 +60,7 @@ export default function ResetPasswordPage() {
               autoComplete="new-password"
             />
           </Field>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full">
             {loading && <Loader2 className="size-4 animate-spin" />}
             {loading ? "Saving…" : "Update password"}

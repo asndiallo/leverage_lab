@@ -18,7 +18,11 @@ export function SortDirectionButton({
       onClick={onToggle}
       aria-label={sortDir === "asc" ? "Ascending" : "Descending"}
     >
-      {sortDir === "asc" ? <ArrowUp className="size-3.5" /> : <ArrowDown className="size-3.5" />}
+      {sortDir === "asc" ? (
+        <ArrowUp className="size-3.5" />
+      ) : (
+        <ArrowDown className="size-3.5" />
+      )}
     </Button>
   );
 }

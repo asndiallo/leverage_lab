@@ -16,7 +16,12 @@ export function Field({
   className?: string;
 }) {
   return (
-    <Label className={cn("flex flex-col items-start gap-1.5 text-xs font-medium text-muted-foreground", className)}>
+    <Label
+      className={cn(
+        "text-muted-foreground flex flex-col items-start gap-1.5 text-xs font-medium",
+        className,
+      )}
+    >
       <span>{label}</span>
       {children}
     </Label>

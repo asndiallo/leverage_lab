@@ -37,12 +37,17 @@ const propertySchema = z.object({
   first_payment_date: z.string().optional().or(z.literal("")),
 });
 
-export async function addProperty(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function addProperty(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const auth = await requireUser();
   if (!auth.ok) return { error: auth.error };
   const { supabase, user } = auth;
 
-  const parsed = propertySchema.safeParse(Object.fromEntries(formData.entries()));
+  const parsed = propertySchema.safeParse(
+    Object.fromEntries(formData.entries()),
+  );
   if (!parsed.success) return { error: firstError(parsed.error) };
   const v = parsed.data;
 
@@ -63,10 +68,13 @@ export async function addProperty(_prev: ActionState, formData: FormData): Promi
     })
     .select("id")
     .single();
-  if (pErr || !property) return { error: pErr?.message ?? "Could not create property" };
+  if (pErr || !property)
+    return { error: pErr?.message ?? "Could not create property" };
 
   // default reserves (5% / 1%)
-  await supabase.from("property_settings").insert({ user_id: user.id, property_id: property.id });
+  await supabase
+    .from("property_settings")
+    .insert({ user_id: user.id, property_id: property.id });
 
   // optional loan
   if (v.loan_amount && v.interest_rate != null && v.term_years) {

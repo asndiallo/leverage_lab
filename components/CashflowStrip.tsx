@@ -1,6 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { HorizonSelector } from "@/components/HorizonSelector";
 import { money, moneySigned, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -15,7 +22,10 @@ function monthEnd(firstOfMonth: string): string {
   ).padStart(2, "0")}`;
 }
 
-function vacancyReasonFor(month: string, periods: VacancyPeriod[]): string | null {
+function vacancyReasonFor(
+  month: string,
+  periods: VacancyPeriod[],
+): string | null {
   const mEnd = monthEnd(month);
   const p = periods.find(
     (v) => v.start_date <= mEnd && (!v.end_date || v.end_date >= month),
@@ -37,12 +47,14 @@ export function CashflowStrip({
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
         <h2 className="font-medium">Cash flow</h2>
         <div className="flex items-center gap-4">
-          <span className="hidden text-xs text-muted-foreground sm:inline">
+          <span className="text-muted-foreground hidden text-xs sm:inline">
             <span className="mr-3 inline-flex items-center gap-1">
-              <span className="inline-block size-2 rounded-full bg-muted-foreground/50" /> projected
+              <span className="bg-muted-foreground/50 inline-block size-2 rounded-full" />{" "}
+              projected
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="inline-block size-2 rounded-full bg-warn" /> vacant
+              <span className="bg-warn inline-block size-2 rounded-full" />{" "}
+              vacant
             </span>
           </span>
           <HorizonSelector current={horizon} />
@@ -60,16 +72,24 @@ export function CashflowStrip({
         </TableHeader>
         <TableBody>
           {rows.map((m) => {
-            const reserves = m.vacancy_reserve_cents + m.maintenance_reserve_cents;
-            const reason = m.is_vacant ? vacancyReasonFor(m.month, vacancyPeriods) : null;
+            const reserves =
+              m.vacancy_reserve_cents + m.maintenance_reserve_cents;
+            const reason = m.is_vacant
+              ? vacancyReasonFor(m.month, vacancyPeriods)
+              : null;
             return (
-              <TableRow key={m.month} className={cn(m.is_projected && "text-muted-foreground")}>
+              <TableRow
+                key={m.month}
+                className={cn(m.is_projected && "text-muted-foreground")}
+              >
                 <TableCell className="pl-5">
                   <span className="text-foreground">{monthLabel(m.month)}</span>
                   <span className="ml-2 inline-flex gap-1 align-middle">
                     {m.is_projected && <Badge variant="outline">Est.</Badge>}
                     {m.is_vacant && (
-                      <Badge variant="warn">{reason ? `Vacant · ${reason}` : "Vacant"}</Badge>
+                      <Badge variant="warn">
+                        {reason ? `Vacant · ${reason}` : "Vacant"}
+                      </Badge>
                     )}
                   </span>
                 </TableCell>
@@ -79,11 +99,15 @@ export function CashflowStrip({
                 <TableCell className="text-right font-mono tabular-nums">
                   {money(m.debt_service_cents)}
                 </TableCell>
-                <TableCell className="text-right font-mono tabular-nums">{money(reserves)}</TableCell>
+                <TableCell className="text-right font-mono tabular-nums">
+                  {money(reserves)}
+                </TableCell>
                 <TableCell
                   className={cn(
                     "pr-5 text-right font-mono font-semibold tabular-nums",
-                    m.net_cashflow_cents < 0 ? "text-negative" : "text-positive",
+                    m.net_cashflow_cents < 0
+                      ? "text-negative"
+                      : "text-positive",
                   )}
                 >
                   {moneySigned(m.net_cashflow_cents)}

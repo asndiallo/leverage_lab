@@ -1,4 +1,9 @@
-import { getProperties, getPortfolioYields, getLoans, getCashflowRange } from "@/lib/queries";
+import {
+  getProperties,
+  getPortfolioYields,
+  getLoans,
+  getCashflowRange,
+} from "@/lib/queries";
 import { PortfolioSummary } from "@/components/PortfolioSummary";
 import { PropertyCard } from "@/components/PropertyCard";
 import { NewPropertyForm } from "@/components/forms/NewPropertyForm";
@@ -11,11 +16,16 @@ export const dynamic = "force-dynamic";
 // the later of this month and the loan's first payment (when full PITI begins).
 function stabilizedMonth(firstPaymentDate: string | null | undefined): string {
   const thisMonth = firstOfMonthISO(new Date());
-  return firstPaymentDate ? laterMonthISO(thisMonth, firstOfMonthISO(firstPaymentDate)) : thisMonth;
+  return firstPaymentDate
+    ? laterMonthISO(thisMonth, firstOfMonthISO(firstPaymentDate))
+    : thisMonth;
 }
 
 export default async function PortfolioPage() {
-  const [properties, yields] = await Promise.all([getProperties(), getPortfolioYields()]);
+  const [properties, yields] = await Promise.all([
+    getProperties(),
+    getPortfolioYields(),
+  ]);
   const yieldsById = new Map(yields.map((y) => [y.property_id, y]));
 
   const rows = await Promise.all(
@@ -25,31 +35,44 @@ export default async function PortfolioPage() {
         .map((l) => l.first_payment_date)
         .filter((d): d is string => !!d)
         .sort()[0];
-      const [cf] = (await getCashflowRange(property.id, stabilizedMonth(firstPay), 1)) as MonthlyCashflow[];
+      const [cf] = (await getCashflowRange(
+        property.id,
+        stabilizedMonth(firstPay),
+        1,
+      )) as MonthlyCashflow[];
       return {
         property,
-        cashInvestedCents: yieldsById.get(property.id)?.total_cash_invested_cents ?? null,
+        cashInvestedCents:
+          yieldsById.get(property.id)?.total_cash_invested_cents ?? null,
         monthlyNetCents: cf?.net_cashflow_cents ?? null,
         isVacant: cf?.is_vacant ?? false,
       };
     }),
   );
 
-  const totalCashInvested = rows.reduce((s, r) => s + (r.cashInvestedCents ?? 0), 0);
-  const totalMonthlyNet = rows.reduce((s, r) => s + (r.monthlyNetCents ?? 0), 0);
+  const totalCashInvested = rows.reduce(
+    (s, r) => s + (r.cashInvestedCents ?? 0),
+    0,
+  );
+  const totalMonthlyNet = rows.reduce(
+    (s, r) => s + (r.monthlyNetCents ?? 0),
+    0,
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight">Portfolio</h1>
-          <p className="text-sm text-muted-foreground">Predictive cash flow across your properties.</p>
+          <p className="text-muted-foreground text-sm">
+            Predictive cash flow across your properties.
+          </p>
         </div>
         <NewPropertyForm />
       </div>
 
       {properties.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+        <div className="text-muted-foreground rounded-xl border border-dashed p-10 text-center text-sm">
           No properties yet. Add your first property to get started.
         </div>
       ) : (

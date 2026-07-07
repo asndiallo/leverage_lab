@@ -19,7 +19,7 @@ export function DocumentList({
   onToggle?: (id: string) => void;
 }) {
   if (docs.length === 0) {
-    return <p className="text-sm text-muted-foreground">No documents.</p>;
+    return <p className="text-muted-foreground text-sm">No documents.</p>;
   }
   const selectable = !!(selectedIds && onToggle);
   return (
@@ -27,7 +27,10 @@ export function DocumentList({
       {docs.map((d) => {
         const url = urlMap[d.storage_path];
         return (
-          <li key={d.id} className="flex items-center justify-between gap-3 py-2">
+          <li
+            key={d.id}
+            className="flex items-center justify-between gap-3 py-2"
+          >
             <div className="flex min-w-0 items-center gap-3">
               {selectable && (
                 <Checkbox
@@ -38,10 +41,14 @@ export function DocumentList({
               )}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{d.doc_type.replace(/_/g, " ")}</Badge>
-                  <span className="truncate text-sm">{d.title || d.file_name}</span>
+                  <Badge variant="outline">
+                    {d.doc_type.replace(/_/g, " ")}
+                  </Badge>
+                  <span className="truncate text-sm">
+                    {d.title || d.file_name}
+                  </span>
                 </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">
+                <div className="text-muted-foreground mt-0.5 text-xs">
                   {formatBytes(d.size_bytes)} · {dateLabel(d.uploaded_at)}
                 </div>
               </div>
@@ -52,7 +59,7 @@ export function DocumentList({
                   href={url}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-2 text-sm font-medium text-primary hover:underline"
+                  className="text-primary px-2 text-sm font-medium hover:underline"
                 >
                   View
                 </a>

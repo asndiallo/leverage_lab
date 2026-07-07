@@ -13,7 +13,10 @@ export function PortfolioSummary({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <StatTile label="Properties" value={propertyCount} />
-      <StatTile label="Total cash invested" value={money(totalCashInvestedCents)} />
+      <StatTile
+        label="Total cash invested"
+        value={money(totalCashInvestedCents)}
+      />
       <StatTile
         label="Monthly cash flow"
         value={moneySigned(totalMonthlyNetCents)}

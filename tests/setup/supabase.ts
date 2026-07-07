@@ -14,9 +14,13 @@ if (!URL || !ANON_KEY || !SERVICE_ROLE_KEY) {
 
 // Bypasses RLS entirely (service_role) — used only for fixture setup/teardown,
 // never to exercise application behavior itself.
-export const adminClient: SupabaseClient<Database> = createClient(URL, SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+export const adminClient: SupabaseClient<Database> = createClient(
+  URL,
+  SERVICE_ROLE_KEY,
+  {
+    auth: { autoRefreshToken: false, persistSession: false },
+  },
+);
 
 export type TestUser = {
   id: string;
@@ -35,12 +39,16 @@ export async function createTestUser(prefix = "test"): Promise<TestUser> {
     password,
     email_confirm: true,
   });
-  if (error || !data.user) throw error ?? new Error("createTestUser: createUser returned no user");
+  if (error || !data.user)
+    throw error ?? new Error("createTestUser: createUser returned no user");
 
   const client = createClient<Database>(URL!, ANON_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
-  const { error: signInError } = await client.auth.signInWithPassword({ email, password });
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (signInError) throw signInError;
 
   return { id: data.user.id, email, password, client };
@@ -51,7 +59,10 @@ export async function deleteTestUser(userId: string): Promise<void> {
 }
 
 /** Sign in as an existing test user with a brand-new client instance. */
-export async function signInAs(email: string, password: string): Promise<SupabaseClient<Database>> {
+export async function signInAs(
+  email: string,
+  password: string,
+): Promise<SupabaseClient<Database>> {
   const client = createClient<Database>(URL!, ANON_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
   });

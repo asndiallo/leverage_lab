@@ -16,24 +16,30 @@
 // ---- Enums (mirror the PG enum types in 0001) ------------------------------
 
 export type PropertyType =
-  | "single_family" | "duplex" | "triplex" | "fourplex"
-  | "townhouse" | "condo" | "other";
+  | "single_family"
+  | "duplex"
+  | "triplex"
+  | "fourplex"
+  | "townhouse"
+  | "condo"
+  | "other";
 
 export type PropertyStatus = "pending" | "active" | "sold";
 
 export type InviteStatus = "pending" | "accepted" | "revoked";
 
-export type LoanType = "original" | "refinance" | "heloc" | "second_lien" | "other";
+export type LoanType =
+  "original" | "refinance" | "heloc" | "second_lien" | "other";
 
 export type RateType = "fixed" | "arm";
 
 export type LoanStatus = "active" | "paid_off" | "refinanced_out";
 
 export type JurisdictionType =
-  | "isd" | "county" | "city" | "mud" | "esd" | "college" | "other";
+  "isd" | "county" | "city" | "mud" | "esd" | "college" | "other";
 
 export type ExemptionType =
-  | "homestead" | "over65" | "disabled_veteran" | "disability" | "other";
+  "homestead" | "over65" | "disabled_veteran" | "disability" | "other";
 
 export type ExemptionCalcMethod = "flat_amount" | "percent_of_assessed";
 
@@ -42,46 +48,76 @@ export type AssessedValueSource = "county_record" | "estimate";
 export type LeaseStatus = "pending" | "active" | "ended";
 
 export type VacancyReason =
-  | "turnover" | "renovation" | "pcs_move" | "market_soft"
-  | "intentional_hold" | "other";
+  | "turnover"
+  | "renovation"
+  | "pcs_move"
+  | "market_soft"
+  | "intentional_hold"
+  | "other";
 
 export type TransactionDirection = "income" | "expense";
 
 export type CategoryGroup =
-  | "income" | "operating_expense" | "capital_improvement" | "loan" | "closing";
+  "income" | "operating_expense" | "capital_improvement" | "loan" | "closing";
 
 export type PaidBy = "owner" | "seller" | "tenant";
 
 export type MarketSource = "zillow_estimate" | "appraisal" | "manual";
 
-export type UtilityServiceType = "electric" | "water_sewer_trash" | "internet" | "gas";
+export type UtilityServiceType =
+  "electric" | "water_sewer_trash" | "internet" | "gas";
 
 export type DocumentType =
-  | "receipt" | "lease" | "closing_disclosure" | "tax_document"
-  | "insurance" | "statement" | "appraisal" | "other";
+  | "receipt"
+  | "lease"
+  | "closing_disclosure"
+  | "tax_document"
+  | "insurance"
+  | "statement"
+  | "appraisal"
+  | "other";
 
 // Transaction category codes (seeded rows in transaction_categories).
 // Kept as a string-literal union for compile-time safety even though the DB
 // stores it as a text FK (so new categories can be added without a type migration).
 export type TransactionCategoryCode =
   // income
-  | "rent" | "late_fee" | "utility_reimbursement" | "other_income"
+  | "rent"
+  | "late_fee"
+  | "utility_reimbursement"
+  | "other_income"
   // operating_expense
-  | "utilities_electric" | "utilities_water" | "utilities_internet"
-  | "insurance" | "hoa_dues" | "repairs_maintenance" | "supplies"
-  | "property_management" | "other_operating"
+  | "utilities_electric"
+  | "utilities_water"
+  | "utilities_internet"
+  | "insurance"
+  | "hoa_dues"
+  | "repairs_maintenance"
+  | "supplies"
+  | "property_management"
+  | "other_operating"
   // capital_improvement
-  | "renovation" | "appliance" | "security_system" | "landscaping" | "other_capital"
+  | "renovation"
+  | "appliance"
+  | "security_system"
+  | "landscaping"
+  | "other_capital"
   // loan
-  | "principal_payment" | "interest_payment" | "escrow_payment"
+  | "principal_payment"
+  | "interest_payment"
+  | "escrow_payment"
   // closing
-  | "seller_credit" | "borrower_credit" | "closing_cost" | "prepaid"
-  | "escrow_initial" | "other_closing";
+  | "seller_credit"
+  | "borrower_credit"
+  | "closing_cost"
+  | "prepaid"
+  | "escrow_initial"
+  | "other_closing";
 
 // ---- Supabase-style Database interface -------------------------------------
 
 type Timestamptz = string; // ISO string
-type DateStr = string;     // 'YYYY-MM-DD'
+type DateStr = string; // 'YYYY-MM-DD'
 
 export interface Database {
   public: {
@@ -137,7 +173,9 @@ export interface Database {
           invited_by?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["property_members"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["property_members"]["Insert"]
+        >;
       };
 
       property_invites: {
@@ -165,7 +203,9 @@ export interface Database {
           accepted_at?: Timestamptz | null;
           accepted_by?: string | null;
         };
-        Update: Partial<Database["public"]["Tables"]["property_invites"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["property_invites"]["Insert"]
+        >;
       };
 
       loans: {
@@ -233,7 +273,9 @@ export interface Database {
           notes?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["escrow_schedules"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["escrow_schedules"]["Insert"]
+        >;
       };
 
       property_settings: {
@@ -255,7 +297,9 @@ export interface Database {
           created_at?: Timestamptz;
           updated_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["property_settings"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["property_settings"]["Insert"]
+        >;
       };
 
       taxing_jurisdictions: {
@@ -275,7 +319,9 @@ export interface Database {
           jurisdiction_type: JurisdictionType;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["taxing_jurisdictions"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["taxing_jurisdictions"]["Insert"]
+        >;
       };
 
       tax_rates: {
@@ -327,7 +373,9 @@ export interface Database {
           notes?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["assessed_values"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["assessed_values"]["Insert"]
+        >;
       };
 
       tax_exemptions: {
@@ -363,7 +411,9 @@ export interface Database {
           notes?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["tax_exemptions"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["tax_exemptions"]["Insert"]
+        >;
       };
 
       leases: {
@@ -431,7 +481,9 @@ export interface Database {
           notes?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["vacancy_periods"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["vacancy_periods"]["Insert"]
+        >;
       };
 
       transaction_categories: {
@@ -449,7 +501,9 @@ export interface Database {
           label: string;
           sort_order?: number;
         };
-        Update: Partial<Database["public"]["Tables"]["transaction_categories"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["transaction_categories"]["Insert"]
+        >;
       };
 
       transactions: {
@@ -507,7 +561,9 @@ export interface Database {
           notes?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["market_snapshots"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["market_snapshots"]["Insert"]
+        >;
       };
 
       utility_accounts: {
@@ -533,7 +589,9 @@ export interface Database {
           created_at?: Timestamptz;
           updated_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["utility_accounts"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["utility_accounts"]["Insert"]
+        >;
       };
 
       documents: {
@@ -585,7 +643,9 @@ export interface Database {
           lease_id?: string | null;
           created_at?: Timestamptz;
         };
-        Update: Partial<Database["public"]["Tables"]["document_links"]["Insert"]>;
+        Update: Partial<
+          Database["public"]["Tables"]["document_links"]["Insert"]
+        >;
       };
     };
 
@@ -616,7 +676,11 @@ export interface Database {
 
     Functions: {
       mortgage_monthly_pi: {
-        Args: { p_principal_cents: number; p_annual_rate: number; p_term_months: number };
+        Args: {
+          p_principal_cents: number;
+          p_annual_rate: number;
+          p_term_months: number;
+        };
         Returns: number;
       };
       property_current_escrow: {
@@ -687,7 +751,8 @@ export type UtilityAccount = Tables<"utility_accounts">;
 export type DocumentRecord = Tables<"documents">;
 
 export type LoanPayment = Database["public"]["Views"]["v_loan_payment"]["Row"];
-export type PropertyYields = Database["public"]["Views"]["v_property_yields"]["Row"];
+export type PropertyYields =
+  Database["public"]["Views"]["v_property_yields"]["Row"];
 
 // Return shape of property_monthly_cashflow(). All *_cents are integer cents.
 export interface MonthlyCashflow {

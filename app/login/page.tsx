@@ -62,7 +62,10 @@ export default function LoginPage({
     const supabase = createClient();
 
     if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       setLoading(false);
       if (error) setError(error.message);
       else window.location.assign(next);
@@ -111,19 +114,24 @@ export default function LoginPage({
     <main className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-sm p-8">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+          <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md text-xs font-semibold">
             LL
           </span>
           <h1 className="text-xl font-semibold tracking-tight">Leverage Lab</h1>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">{COPY[mode].title}</p>
+        <p className="text-muted-foreground mt-3 text-sm">{COPY[mode].title}</p>
 
         {sent ? (
-          <div className="mt-6 rounded-lg border bg-muted/40 p-4 text-sm">
+          <div className="bg-muted/40 mt-6 rounded-lg border p-4 text-sm">
             Check your email for a link.
-            <span className="mt-1 block text-muted-foreground">
+            <span className="text-muted-foreground mt-1 block">
               Local dev: open Mailpit at{" "}
-              <a className="text-primary underline" href="http://127.0.0.1:54324" target="_blank" rel="noreferrer">
+              <a
+                className="text-primary underline"
+                href="http://127.0.0.1:54324"
+                target="_blank"
+                rel="noreferrer"
+              >
                 127.0.0.1:54324
               </a>
               .
@@ -142,7 +150,7 @@ export default function LoginPage({
               Continue with Google
             </Button>
 
-            <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="text-muted-foreground my-4 flex items-center gap-3 text-xs">
               <Separator className="flex-1" />
               or
               <Separator className="flex-1" />
@@ -168,12 +176,14 @@ export default function LoginPage({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    autoComplete={
+                      mode === "signup" ? "new-password" : "current-password"
+                    }
                   />
                 </Field>
               )}
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && <p className="text-destructive text-sm">{error}</p>}
 
               <Button type="submit" disabled={loading} className="w-full">
                 {loading && <Loader2 className="size-4 animate-spin" />}
@@ -184,19 +194,31 @@ export default function LoginPage({
             <div className="mt-4 flex flex-col gap-1.5 text-sm">
               {mode === "signin" && (
                 <>
-                  <button onClick={() => switchMode("forgot")} className="text-left text-muted-foreground hover:text-foreground">
+                  <button
+                    onClick={() => switchMode("forgot")}
+                    className="text-muted-foreground hover:text-foreground text-left"
+                  >
                     Forgot password?
                   </button>
-                  <button onClick={() => switchMode("magic")} className="text-left text-muted-foreground hover:text-foreground">
+                  <button
+                    onClick={() => switchMode("magic")}
+                    className="text-muted-foreground hover:text-foreground text-left"
+                  >
                     Email me a magic link instead
                   </button>
-                  <button onClick={() => switchMode("signup")} className="text-left text-muted-foreground hover:text-foreground">
+                  <button
+                    onClick={() => switchMode("signup")}
+                    className="text-muted-foreground hover:text-foreground text-left"
+                  >
                     Don&apos;t have an account? Sign up
                   </button>
                 </>
               )}
               {mode !== "signin" && (
-                <button onClick={() => switchMode("signin")} className="text-left text-muted-foreground hover:text-foreground">
+                <button
+                  onClick={() => switchMode("signin")}
+                  className="text-muted-foreground hover:text-foreground text-left"
+                >
                   Back to sign in
                 </button>
               )}

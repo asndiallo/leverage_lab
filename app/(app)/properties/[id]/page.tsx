@@ -74,7 +74,8 @@ export default async function PropertyPage({
   const homestead = await getHomesteadStatus(params.id);
 
   const loan = loans.find((l) => l.status === "active") ?? loans[0] ?? null;
-  const loanPayment = loanPayments.find((p) => p.loan_id === loan?.id) ?? loanPayments[0] ?? null;
+  const loanPayment =
+    loanPayments.find((p) => p.loan_id === loan?.id) ?? loanPayments[0] ?? null;
 
   // Start the projection at the "stabilized" month (first full-PITI payment).
   const firstPay = loans
@@ -85,12 +86,15 @@ export default async function PropertyPage({
     ? laterMonthISO(firstOfMonthISO(new Date()), firstOfMonthISO(firstPay))
     : firstOfMonthISO(new Date());
 
-  const [escrow, cashflow, taxBreakdown, withHomesteadCents] = await Promise.all([
-    getCurrentEscrow(params.id, startMonth),
-    getCashflowRange(params.id, startMonth, horizon),
-    taxYear ? getTaxBreakdown(params.id, taxYear) : Promise.resolve([]),
-    taxYear ? getTaxWithHomesteadCents(params.id, taxYear) : Promise.resolve(0),
-  ]);
+  const [escrow, cashflow, taxBreakdown, withHomesteadCents] =
+    await Promise.all([
+      getCurrentEscrow(params.id, startMonth),
+      getCashflowRange(params.id, startMonth, horizon),
+      taxYear ? getTaxBreakdown(params.id, taxYear) : Promise.resolve([]),
+      taxYear
+        ? getTaxWithHomesteadCents(params.id, taxYear)
+        : Promise.resolve(0),
+    ]);
 
   const annualTaxCents = taxBreakdown.reduce((s, r) => s + r.tax_cents, 0);
   const stabilizedNetCents = cashflow[0]?.net_cashflow_cents ?? null;
@@ -99,13 +103,18 @@ export default async function PropertyPage({
     <div className="space-y-6">
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
       >
         <ArrowLeft className="size-4" />
         Portfolio
       </Link>
 
-      <HeaderCard property={property} loan={loan} loanPayment={loanPayment} escrow={escrow} />
+      <HeaderCard
+        property={property}
+        loan={loan}
+        loanPayment={loanPayment}
+        escrow={escrow}
+      />
 
       <MetricsRow
         stabilizedNetCents={stabilizedNetCents}
@@ -121,9 +130,17 @@ export default async function PropertyPage({
         <TransactionForm propertyId={params.id} categories={categories} />
       </div>
 
-      <CoOwnersCard propertyId={params.id} members={members} pendingInvites={pendingInvites} />
+      <CoOwnersCard
+        propertyId={params.id}
+        members={members}
+        pendingInvites={pendingInvites}
+      />
 
-      <CashflowStrip rows={cashflow} horizon={horizon} vacancyPeriods={vacancyPeriods} />
+      <CashflowStrip
+        rows={cashflow}
+        horizon={horizon}
+        vacancyPeriods={vacancyPeriods}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TaxBreakdown

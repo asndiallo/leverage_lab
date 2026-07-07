@@ -29,7 +29,8 @@ export async function createTestProperty(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestProperty: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestProperty: no row returned");
   return data;
 }
 
@@ -55,7 +56,8 @@ export async function createTestPropertySettings(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestPropertySettings: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestPropertySettings: no row returned");
   return data;
 }
 
@@ -76,7 +78,8 @@ export async function createTestJurisdiction(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestJurisdiction: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestJurisdiction: no row returned");
   return data;
 }
 
@@ -97,7 +100,8 @@ export async function createTestTaxRate(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestTaxRate: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestTaxRate: no row returned");
   return data;
 }
 
@@ -119,7 +123,8 @@ export async function createTestAssessedValue(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestAssessedValue: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestAssessedValue: no row returned");
   return data;
 }
 
@@ -145,7 +150,8 @@ export async function createTestExemption(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestExemption: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestExemption: no row returned");
   return data;
 }
 
@@ -169,7 +175,8 @@ export async function createTestLoan(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestLoan: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestLoan: no row returned");
   return data;
 }
 
@@ -192,7 +199,8 @@ export async function createTestEscrow(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestEscrow: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestEscrow: no row returned");
   return data;
 }
 
@@ -216,7 +224,8 @@ export async function createTestLease(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestLease: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestLease: no row returned");
   return data;
 }
 
@@ -238,6 +247,7 @@ export async function createTestTransaction(
     })
     .select()
     .single();
-  if (error || !data) throw error ?? new Error("createTestTransaction: no row returned");
+  if (error || !data)
+    throw error ?? new Error("createTestTransaction: no row returned");
   return data;
 }

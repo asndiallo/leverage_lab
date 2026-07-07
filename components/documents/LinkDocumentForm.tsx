@@ -5,7 +5,13 @@ import { linkDocument } from "@/lib/actions";
 import { Field } from "@/components/forms/formPrimitives";
 import { FormDialogButton } from "@/components/forms/FormDialogButton";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { DocumentRecord } from "@/types/database";
 
 export function LinkDocumentForm({

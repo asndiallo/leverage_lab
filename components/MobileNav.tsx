@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { NavLinks } from "@/components/NavLinks";
 import SignOutButton from "@/components/SignOutButton";
 
@@ -26,10 +31,15 @@ export function MobileNav({ email }: { email: string }) {
           <SheetTitle>Leverage Lab</SheetTitle>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-1 p-3">
-          <NavLinks className="flex-col items-stretch" onNavigate={() => setOpen(false)} />
+          <NavLinks
+            className="flex-col items-stretch"
+            onNavigate={() => setOpen(false)}
+          />
         </div>
         <div className="flex items-center justify-between gap-3 border-t p-4">
-          <span className="truncate text-xs text-muted-foreground">{email}</span>
+          <span className="text-muted-foreground truncate text-xs">
+            {email}
+          </span>
           <SignOutButton />
         </div>
       </SheetContent>

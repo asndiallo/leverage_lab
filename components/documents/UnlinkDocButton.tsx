@@ -20,7 +20,12 @@ export function UnlinkDocButton({
       <input type="hidden" name="link_id" value={linkId} />
       <input type="hidden" name="property_id" value={propertyId} />
       <input type="hidden" name="transaction_id" value={transactionId} />
-      <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+      <Button
+        type="submit"
+        variant="ghost"
+        size="sm"
+        className="text-muted-foreground hover:text-destructive"
+      >
         Unlink
       </Button>
     </form>

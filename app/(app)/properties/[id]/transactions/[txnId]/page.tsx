@@ -50,7 +50,7 @@ export default async function TransactionPage({
     <div className="space-y-6">
       <Link
         href={`/properties/${params.id}`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
       >
         <ArrowLeft className="size-4" />
         {property.address}
@@ -60,13 +60,17 @@ export default async function TransactionPage({
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline">{txn.transaction_categories?.label ?? txn.category}</Badge>
+              <Badge variant="outline">
+                {txn.transaction_categories?.label ?? txn.category}
+              </Badge>
               {txn.is_estimate && <Badge variant="outline">Est.</Badge>}
             </div>
             <h1 className="mt-2 text-xl font-semibold tracking-tight">
-              {txn.description || txn.transaction_categories?.label || "Transaction"}
+              {txn.description ||
+                txn.transaction_categories?.label ||
+                "Transaction"}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {dateLabel(txn.txn_date)} · paid by {txn.paid_by}
             </p>
           </div>
@@ -80,7 +84,9 @@ export default async function TransactionPage({
             {money(txn.amount_cents)}
           </div>
         </div>
-        {txn.notes && <p className="mt-3 text-sm text-muted-foreground">{txn.notes}</p>}
+        {txn.notes && (
+          <p className="text-muted-foreground mt-3 text-sm">{txn.notes}</p>
+        )}
         <div className="mt-4">
           <EditTransactionForm txn={txn} categories={categories} />
         </div>
@@ -104,7 +110,9 @@ export default async function TransactionPage({
           </div>
         </div>
         {linked.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No documents linked to this transaction yet.</p>
+          <p className="text-muted-foreground text-sm">
+            No documents linked to this transaction yet.
+          </p>
         ) : (
           <div className="space-y-4">
             {linked.map(({ link_id, doc }) => (

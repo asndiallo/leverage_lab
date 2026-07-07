@@ -34,7 +34,9 @@ export function TaxBreakdown({
     <Card className="gap-0 p-0">
       <div className="border-b px-5 py-3">
         <h2 className="font-medium">Property tax{year ? ` — ${year}` : ""}</h2>
-        <p className="text-xs text-muted-foreground">Guadalupe County · multi-jurisdiction</p>
+        <p className="text-muted-foreground text-xs">
+          Guadalupe County · multi-jurisdiction
+        </p>
       </div>
       <Table className="min-w-[520px]">
         <TableHeader>
@@ -77,12 +79,13 @@ export function TaxBreakdown({
         <div className="text-muted-foreground">
           Homestead{" "}
           {homesteadFiled ? (
-            <span className="font-medium text-positive">filed</span>
+            <span className="text-positive font-medium">filed</span>
           ) : (
             "not yet filed"
           )}{" "}
           · effective TY2027. Projected savings once active:{" "}
-          <span className="font-medium text-positive">{money(savings)}/yr</span> (~
+          <span className="text-positive font-medium">{money(savings)}/yr</span>{" "}
+          (~
           {money(withHomesteadCents)} vs {money(annualTaxCents)}).
         </div>
         <HomesteadToggle propertyId={propertyId} filed={homesteadFiled} />
