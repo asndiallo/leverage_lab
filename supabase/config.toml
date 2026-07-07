@@ -164,6 +164,7 @@ site_url = "https://leveragelab-delta.vercel.app"
 # trailing "/**" to cover the app's actual redirect paths (/auth/confirm, /reset-password, etc.).
 additional_redirect_urls = [
   "http://127.0.0.1:3000/**",
+  "http://localhost:3000/**",
   "https://leveragelab-delta.vercel.app/**",
   "https://*-assane-diallos-projects.vercel.app/**",
 ]
