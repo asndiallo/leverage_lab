@@ -23,6 +23,8 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    reviewers:
+      - "asndiallo"
 
   # The CI workflow's own actions (actions/checkout, setup-node, pnpm/action-setup,
   # supabase/setup-cli).
@@ -36,3 +38,5 @@ updates:
     commit-message:
       prefix: "ci"
       include: "scope"
+    reviewers:
+      - "asndiallo"
