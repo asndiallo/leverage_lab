@@ -39,5 +39,11 @@ jobs:
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # Dependabot PRs trigger this workflow like any other PR; without this
+          # the action refuses to run for any non-human actor (public-repo safety
+          # default). Explicit allowlist, not "*" — the action's own docs warn
+          # that "*" on a public repo lets any external App invoke it with
+          # prompts they control.
+          allowed_bots: "dependabot"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
