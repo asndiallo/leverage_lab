@@ -5,8 +5,8 @@ import type { Database } from "@/types/database";
 // Server-side client. Reads the user's session from cookies so RLS applies as
 // that user. In a Server Component the cookie write throws (read-only) — that's
 // fine; the middleware refreshes the session on every request.
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

@@ -34,7 +34,7 @@ export async function inviteCoOwner(
   if (error || !invite)
     return { error: error?.message ?? "Could not create invite" };
 
-  const h = headers();
+  const h = await headers();
   const proto = h.get("x-forwarded-proto") ?? "http";
   const host = h.get("host");
   const inviteUrl = `${proto}://${host}/invites/${invite.token}`;

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const host = request.headers.get("host")!;
   const base = `${proto}://${host}`;
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);

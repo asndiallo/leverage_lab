@@ -10,7 +10,7 @@ export type LinkedDocument = { link_id: string; doc: DocumentRecord };
 export async function getPropertyDocuments(
   propertyId: string,
 ): Promise<DocumentRecord[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
     .select("*")
@@ -24,7 +24,7 @@ export async function getPropertyDocuments(
 export async function getTransactionDocuments(
   txnId: string,
 ): Promise<LinkedDocument[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("document_links")
     .select("id, documents(*)")
@@ -42,7 +42,7 @@ export async function getTransactionDocuments(
 export async function getUnlinkedPropertyDocuments(
   propertyId: string,
 ): Promise<DocumentRecord[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
     .select("*, document_links(id)")
@@ -61,7 +61,7 @@ export async function getLinkableDocuments(
   propertyId: string,
   txnId: string,
 ): Promise<DocumentRecord[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
     .select("*, document_links(transaction_id)")
@@ -76,7 +76,7 @@ export async function getLinkableDocuments(
 }
 
 export async function getAllDocuments(): Promise<DocumentWithProperty[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
     .select("*, properties(address, city, state)")
@@ -91,7 +91,7 @@ export async function getSignedUrlMap(
   expiresIn = 3600,
 ): Promise<Record<string, string>> {
   if (paths.length === 0) return {};
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.storage
     .from("documents")
     .createSignedUrls(paths, expiresIn);

@@ -7,7 +7,7 @@ projected cash flow and document management. Properties can have co-owners
 
 ## Stack
 
-- **Next.js 14** (App Router) + React 18 + TypeScript
+- **Next.js 16** (App Router) + React 19 + TypeScript
 - **Supabase** (Postgres, Auth, Storage) via `@supabase/ssr`
 - **Tailwind CSS v4** + **shadcn/ui** (Radix primitives, `new-york` style)
 - Dark-mode-first, system-preference driven (no manual toggle)

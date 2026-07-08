@@ -17,7 +17,7 @@ export type TransactionWithCategory = Transaction & {
 export async function getCategories(): Promise<
   { code: string; label: string; category_group: CategoryGroup }[]
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("transaction_categories")
     .select("code, label, category_group")
@@ -29,7 +29,7 @@ export async function getCategories(): Promise<
 export async function getTransactions(
   id: string,
 ): Promise<TransactionWithCategory[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("transactions")
     .select("*, transaction_categories(category_group, direction, label)")
@@ -42,7 +42,7 @@ export async function getTransactions(
 export async function getTransaction(
   txnId: string,
 ): Promise<TransactionWithCategory | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("transactions")
     .select("*, transaction_categories(category_group, direction, label)")
