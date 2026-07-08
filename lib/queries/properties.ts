@@ -10,7 +10,7 @@ import type {
 } from "@/types/database";
 
 export async function getProperties(): Promise<Property[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("properties")
     .select("*")
@@ -20,7 +20,7 @@ export async function getProperties(): Promise<Property[]> {
 }
 
 export async function getProperty(id: string): Promise<Property | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("properties")
     .select("*")
@@ -31,7 +31,7 @@ export async function getProperty(id: string): Promise<Property | null> {
 }
 
 export async function getPortfolioYields(): Promise<PropertyYields[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.from("v_property_yields").select("*");
   if (error) throw error;
   return data ?? [];
@@ -40,7 +40,7 @@ export async function getPortfolioYields(): Promise<PropertyYields[]> {
 export async function getPropertyYields(
   id: string,
 ): Promise<PropertyYields | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("v_property_yields")
     .select("*")
@@ -51,7 +51,7 @@ export async function getPropertyYields(
 }
 
 export async function getVacancyPeriods(id: string): Promise<VacancyPeriod[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("vacancy_periods")
     .select("*")
@@ -62,7 +62,7 @@ export async function getVacancyPeriods(id: string): Promise<VacancyPeriod[]> {
 }
 
 export async function getLoans(id: string): Promise<Loan[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("loans")
     .select("*")
@@ -73,7 +73,7 @@ export async function getLoans(id: string): Promise<Loan[]> {
 }
 
 export async function getLoanPayments(id: string): Promise<LoanPayment[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("v_loan_payment")
     .select("*")
@@ -86,7 +86,7 @@ export async function getCurrentEscrow(
   id: string,
   asof: string,
 ): Promise<EscrowSchedule | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("property_current_escrow", {
     p_property_id: id,
     p_asof: asof,
@@ -102,7 +102,7 @@ export async function getCashflowRange(
   start: string,
   months: number,
 ): Promise<MonthlyCashflow[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("property_cashflow_range", {
     p_property_id: id,
     p_start: start,

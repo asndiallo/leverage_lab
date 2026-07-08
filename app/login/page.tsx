@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Field } from "@/components/forms/formPrimitives";
@@ -19,11 +19,10 @@ const COPY: Record<Mode, { title: string; cta: string }> = {
   magic: { title: "Sign in with a magic link.", cta: "Send magic link" },
 };
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { next?: string };
+export default function LoginPage(props: {
+  searchParams: Promise<{ next?: string }>;
 }) {
+  const searchParams = use(props.searchParams);
   const next = searchParams?.next || "/";
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");

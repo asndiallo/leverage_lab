@@ -8,12 +8,11 @@ export const dynamic = "force-dynamic";
 // the invited email — see accept_property_invite() (0006). Unauthenticated
 // visitors are bounced to /login with `next` pointing back here so they land
 // right back on this page once signed in (see app/login/page.tsx).
-export default async function AcceptInvitePage({
-  params,
-}: {
-  params: { token: string };
+export default async function AcceptInvitePage(props: {
+  params: Promise<{ token: string }>;
 }) {
-  const supabase = createClient();
+  const params = await props.params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -14,7 +14,7 @@ export function firstError(err: z.ZodError): string {
 export const optionalEmail = z.string().email().optional().or(z.literal(""));
 export const money = z.coerce.number().nonnegative();
 
-type SupabaseServerClient = ReturnType<typeof createClient>;
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 type AuthResult =
   | { ok: true; supabase: SupabaseServerClient; user: User }
@@ -33,7 +33,7 @@ type AuthResult =
  * reliably discriminate)
  */
 export async function requireUser(): Promise<AuthResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

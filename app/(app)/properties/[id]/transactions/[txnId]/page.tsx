@@ -23,11 +23,10 @@ import { UnlinkDocButton } from "@/components/documents/UnlinkDocButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function TransactionPage({
-  params,
-}: {
-  params: { id: string; txnId: string };
+export default async function TransactionPage(props: {
+  params: Promise<{ id: string; txnId: string }>;
 }) {
+  const params = await props.params;
   const [property, txn, categories] = await Promise.all([
     getProperty(params.id),
     getTransaction(params.txnId),

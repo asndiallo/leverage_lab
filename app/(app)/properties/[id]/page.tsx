@@ -33,13 +33,12 @@ export const dynamic = "force-dynamic";
 
 const HORIZONS = [12, 24, 60];
 
-export default async function PropertyPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams: { horizon?: string };
+export default async function PropertyPage(props: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ horizon?: string }>;
 }) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const property = await getProperty(params.id);
   if (!property) notFound();
 

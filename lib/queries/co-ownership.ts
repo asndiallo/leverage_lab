@@ -10,7 +10,7 @@ export type PropertyMemberWithEmail = {
 export async function getPropertyMembers(
   propertyId: string,
 ): Promise<PropertyMemberWithEmail[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("property_members_with_email", {
     p_property_id: propertyId,
   });
@@ -21,7 +21,7 @@ export async function getPropertyMembers(
 export async function getPendingInvites(
   propertyId: string,
 ): Promise<PropertyInvite[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("property_invites")
     .select("*")
