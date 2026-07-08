@@ -156,6 +156,7 @@ export interface Database {
           updated_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["properties"]["Insert"]>;
+        Relationships: [];
       };
 
       property_members: {
@@ -176,6 +177,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["property_members"]["Insert"]
         >;
+        Relationships: [];
       };
 
       property_invites: {
@@ -206,6 +208,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["property_invites"]["Insert"]
         >;
+        Relationships: [];
       };
 
       loans: {
@@ -246,6 +249,7 @@ export interface Database {
           created_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["loans"]["Insert"]>;
+        Relationships: [];
       };
 
       escrow_schedules: {
@@ -276,6 +280,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["escrow_schedules"]["Insert"]
         >;
+        Relationships: [];
       };
 
       property_settings: {
@@ -300,6 +305,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["property_settings"]["Insert"]
         >;
+        Relationships: [];
       };
 
       taxing_jurisdictions: {
@@ -322,6 +328,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["taxing_jurisdictions"]["Insert"]
         >;
+        Relationships: [];
       };
 
       tax_rates: {
@@ -342,6 +349,7 @@ export interface Database {
           created_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["tax_rates"]["Insert"]>;
+        Relationships: [];
       };
 
       assessed_values: {
@@ -376,6 +384,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["assessed_values"]["Insert"]
         >;
+        Relationships: [];
       };
 
       tax_exemptions: {
@@ -414,6 +423,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["tax_exemptions"]["Insert"]
         >;
+        Relationships: [];
       };
 
       leases: {
@@ -452,6 +462,7 @@ export interface Database {
           updated_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["leases"]["Insert"]>;
+        Relationships: [];
       };
 
       vacancy_periods: {
@@ -484,6 +495,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["vacancy_periods"]["Insert"]
         >;
+        Relationships: [];
       };
 
       transaction_categories: {
@@ -504,6 +516,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["transaction_categories"]["Insert"]
         >;
+        Relationships: [];
       };
 
       transactions: {
@@ -538,6 +551,7 @@ export interface Database {
           created_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["transactions"]["Insert"]>;
+        Relationships: [];
       };
 
       market_snapshots: {
@@ -564,6 +578,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["market_snapshots"]["Insert"]
         >;
+        Relationships: [];
       };
 
       utility_accounts: {
@@ -592,6 +607,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["utility_accounts"]["Insert"]
         >;
+        Relationships: [];
       };
 
       documents: {
@@ -624,6 +640,7 @@ export interface Database {
           created_at?: Timestamptz;
         };
         Update: Partial<Database["public"]["Tables"]["documents"]["Insert"]>;
+        Relationships: [];
       };
 
       document_links: {
@@ -646,6 +663,7 @@ export interface Database {
         Update: Partial<
           Database["public"]["Tables"]["document_links"]["Insert"]
         >;
+        Relationships: [];
       };
     };
 
@@ -658,6 +676,7 @@ export interface Database {
           status: LoanStatus;
           monthly_pi_cents: number;
         };
+        Relationships: [];
       };
       v_property_yields: {
         Row: {
@@ -671,6 +690,7 @@ export interface Database {
           net_yield: number | null;
           cash_on_cash: number | null;
         };
+        Relationships: [];
       };
     };
 
