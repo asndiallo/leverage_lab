@@ -82,7 +82,7 @@ jobs:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - uses: supabase/setup-cli@v2
+      - uses: supabase/setup-cli@v3
         with:
           version: latest
       # Applies supabase/migrations against a fresh local Postgres/Auth/Storage
