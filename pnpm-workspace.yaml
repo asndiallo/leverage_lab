@@ -6,12 +6,12 @@ allowBuilds:
   sharp: false
   unrs-resolver: true
 minimumReleaseAgeExclude:
-  - '@supabase/auth-js@2.110.1'
-  - '@supabase/functions-js@2.110.1'
-  - '@supabase/postgrest-js@2.110.1'
-  - '@supabase/realtime-js@2.110.1'
-  - '@supabase/storage-js@2.110.1'
-  - '@supabase/supabase-js@2.110.1'
+  - "@supabase/auth-js@2.110.1"
+  - "@supabase/functions-js@2.110.1"
+  - "@supabase/postgrest-js@2.110.1"
+  - "@supabase/realtime-js@2.110.1"
+  - "@supabase/storage-js@2.110.1"
+  - "@supabase/supabase-js@2.110.1"
 onlyBuiltDependencies:
   # eslint-config-next (Next.js's own ESLint config) -> eslint-import-resolver-typescript
   # -> unrs-resolver: a prebuilt native binary selector, no arbitrary script execution.
