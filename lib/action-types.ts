@@ -1,4 +1,4 @@
-// Shared shape returned by every Server Action (used with useFormState).
+// Shared shape returned by every Server Action (used with useActionState).
 export type ActionState = {
   ok?: boolean;
   error?: string;

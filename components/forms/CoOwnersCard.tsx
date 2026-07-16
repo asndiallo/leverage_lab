@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useFormState } from "react-dom";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Copy, Mail, UserPlus, X } from "lucide-react";
 import { inviteCoOwner, revokeInvite } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
@@ -40,7 +39,7 @@ function RevokeInviteButton({
   inviteId: string;
   propertyId: string;
 }) {
-  const [, action] = useFormState(revokeInvite, emptyActionState);
+  const [, action] = useActionState(revokeInvite, emptyActionState);
   return (
     <form action={action}>
       <input type="hidden" name="invite_id" value={inviteId} />
@@ -68,7 +67,7 @@ export function CoOwnersCard({
   pendingInvites: PropertyInvite[];
 }) {
   const [open, setOpen] = useState(false);
-  const [state, action] = useFormState(inviteCoOwner, emptyActionState);
+  const [state, action] = useActionState(inviteCoOwner, emptyActionState);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

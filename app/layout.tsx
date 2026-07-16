@@ -16,7 +16,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable)}>
+    <html
+      lang="en"
+      className={cn(GeistSans.variable, GeistMono.variable)}
+      suppressHydrationWarning
+    >
       <body className="bg-background text-foreground min-h-screen antialiased">
         <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
       </body>

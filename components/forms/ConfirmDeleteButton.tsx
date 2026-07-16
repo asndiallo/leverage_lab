@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useEffect, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { Loader2, Trash2 } from "lucide-react";
 import { emptyActionState, type ActionState } from "@/lib/action-types";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export function ConfirmDeleteButton({
   iconOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useFormState(action, emptyActionState);
+  const [state, formAction] = useActionState(action, emptyActionState);
 
   useEffect(() => {
     if (state.ok) {
