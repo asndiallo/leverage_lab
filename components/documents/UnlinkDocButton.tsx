@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { unlinkDocument } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ export function UnlinkDocButton({
   propertyId: string;
   transactionId: string;
 }) {
-  const [, action] = useFormState(unlinkDocument, emptyActionState);
+  const [, action] = useActionState(unlinkDocument, emptyActionState);
   return (
     <form action={action}>
       <input type="hidden" name="link_id" value={linkId} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { setHomesteadFiled } from "@/lib/actions";
 import { emptyActionState } from "@/lib/action-types";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export function HomesteadToggle({
   propertyId: string;
   filed: boolean;
 }) {
-  const [, action] = useFormState(setHomesteadFiled, emptyActionState);
+  const [, action] = useActionState(setHomesteadFiled, emptyActionState);
   return (
     <form action={action}>
       <input type="hidden" name="property_id" value={propertyId} />
