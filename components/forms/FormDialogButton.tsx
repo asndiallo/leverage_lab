@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useFormState } from "react-dom";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 import { emptyActionState, type ActionState } from "@/lib/action-types";
 import { Button } from "@/components/ui/button";
 import { SubmitButton } from "./formPrimitives";
@@ -30,7 +29,7 @@ export function FormDialogButton({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useFormState(action, emptyActionState);
+  const [state, formAction] = useActionState(action, emptyActionState);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
