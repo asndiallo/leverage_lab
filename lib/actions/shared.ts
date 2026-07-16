@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import type { ActionState } from "@/lib/action-types";
 
 // Not itself a Server Action (no "use server" here — a "use server" file may
 // only export async functions), just the bits every action in lib/actions/*

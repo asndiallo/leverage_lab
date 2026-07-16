@@ -56,9 +56,12 @@ export function ConfirmDeleteButton({
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(action, emptyActionState);
 
+  if (state.ok && open) {
+    setOpen(false);
+  }
+
   useEffect(() => {
     if (state.ok) {
-      setOpen(false);
       onDeleted?.();
     }
   }, [state, onDeleted]);

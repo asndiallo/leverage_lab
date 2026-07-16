@@ -38,10 +38,13 @@ export function FormDialogButton({
   const [state, formAction] = useActionState(action, emptyActionState);
   const ref = useRef<HTMLFormElement>(null);
 
+  if (state.ok && open) {
+    setOpen(false);
+  }
+
   useEffect(() => {
     if (state.ok) {
       ref.current?.reset();
-      setOpen(false);
     }
   }, [state]);
 
