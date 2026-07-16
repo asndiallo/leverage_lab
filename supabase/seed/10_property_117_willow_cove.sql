@@ -1,7 +1,8 @@
 -- =============================================================================
 -- Seed: 117 Willow Cove, Cibolo TX 78108
--- Source docs: NFCU Closing Disclosure (07/01/2026) + Guadalupe County certified
--- tax certificate #26-SA-2045 (06/12/2026). All amounts in integer cents.
+-- Source docs: NFCU Closing Disclosure (issued/closed 07/16/2026) + Guadalupe
+-- County certified tax certificate #26-SA-2045 (06/12/2026). All amounts in
+-- integer cents.
 -- Run with:  psql "$DB_URL" -v owner_email=you@example.com
 -- One big data-modifying CTE so it's atomic. Run once on a clean property set.
 -- =============================================================================
@@ -14,7 +15,7 @@ prop as (
                           purchase_price_cents, purchase_date, property_type, status)
   select uid, '117 Willow Cove', 'Cibolo', 'TX', '78108',
          '110923 / R358077', '1G3626-4004-02400-0-00',
-         29550000, date '2026-07-09', 'single_family', 'pending'
+         29550000, date '2026-07-16', 'single_family', 'pending'
   from owner
   returning id, user_id
 ),
@@ -23,7 +24,7 @@ loan as (
                      interest_rate, rate_type, term_months, funding_date, first_payment_date,
                      pi_override_cents, status, notes)
   select user_id, id, 'original', 'Navy Federal Credit Union', 30185300,
-         0.0550, 'fixed', 360, date '2026-07-09', date '2026-09-01', 171389, 'active',
+         0.0550, 'fixed', 360, date '2026-07-16', date '2026-09-01', 171389, 'active',
          'VA loan; loan > price by the financed $6,353.25 VA funding fee. P&I is the lender''s exact figure.'
   from prop
   returning id, property_id, user_id
@@ -37,23 +38,22 @@ escrow as (
   insert into escrow_schedules (user_id, property_id, loan_id, effective_date,
     monthly_tax_escrow_cents, monthly_insurance_escrow_cents, monthly_hoa_cents, notes)
   select l.user_id, l.property_id, l.id, date '2026-09-01', 47517, 14417, 2016,
-         'NFCU CD 07/01/2026. Escrow $619.34 = tax $475.17 + ins $144.17. HOA $20.16/mo is non-escrowed, bundled into the monthly nut.'
+         'NFCU CD 07/16/2026. Escrow $619.34 = tax $475.17 + ins $144.17. HOA $20.16/mo is non-escrowed, bundled into the monthly nut.'
   from loan l
   returning property_id
 ),
 txn as (
   insert into transactions (user_id, property_id, txn_date, amount_cents, category,
                             description, paid_by, is_estimate, notes)
-  select p.user_id, p.id, date '2026-07-09', v.amount, v.cat,
+  select p.user_id, p.id, date '2026-07-16', v.amount, v.cat,
          v.descr, v.payer::paid_by, false, v.note
   from prop p cross join (values
-    (1496908, 'closing_cost',    'Loan Costs (A+B+C): origination $4,905.11 + services $7,442.60 (incl VA funding fee $6,353.25, financed) + title $2,621.37', 'owner',  'CD Section D'),
-    (17400,   'other_closing',   'Taxes & gov fees: recording — deed $41.00 + mortgage $133.00',                                                          'owner',  'CD Section E'),
-    (277604,  'prepaid',         'Prepaids: hazard insurance 12mo $1,730.00 + prepaid interest $1,046.04 (23 days @ $45.48)',                             'owner',  'CD Section F'),
+    (1355636, 'closing_cost',    'Loan Costs (A+B+C): origination $4,905.11 + VA funding fee $6,353.25 (financed) + title (borrower-shopped) $2,298.00', 'owner',  'CD Section D'),
+    (245768,  'prepaid',         'Prepaids: hazard insurance 12mo $1,730.00 + prepaid interest $727.68 (16 days @ $45.48, 07/16-08/01)',                  'owner',  'CD Section F'),
     (384406,  'escrow_initial',  'Initial escrow: insurance 3mo $432.51 + property tax 10mo $4,751.70 - aggregate adjustment $1,340.15',                  'owner',  'CD Section G'),
-    (76975,   'other_closing',   'Other: HOA transfer fee $250.00 + home inspection $519.75',                                                             'owner',  'CD Section H'),
-    (1000000, 'seller_credit',   'Seller credit',                                                                                                         'seller', 'CD Section L05 / N08'),
-    (165192,  'borrower_credit', 'Title policy adjustment $1,646.00 + assessment proration 07/01-07/09 $5.92',                                            'owner',  'CD adjustments (Section L)')
+    (75000,   'other_closing',   'Other: HOA transfer fee $250.00 (at closing) + home inspection $500.00 (paid before closing)',                          'owner',  'CD Section H'),
+    (820306,  'seller_credit',   'Seller credit: POCs/HOI/Orig/Discount $7,135.11 + title-escrow/title policy/pt escrow credit $1,067.95',                'seller', 'CD Section L06/L08'),
+    (462010,  'borrower_credit', 'Title policy adjustment $1,646.00 + county tax proration 01/01-07/09 $2,968.18 + assessment proration 07/01-07/09 $5.92', 'owner', 'CD adjustments (Section L09/L13/L14)')
   ) as v(amount, cat, descr, payer, note)
   returning id
 ),
