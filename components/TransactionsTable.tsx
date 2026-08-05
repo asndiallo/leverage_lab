@@ -1,12 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { deleteTransactions } from "@/lib/actions";
-import { useSelection } from "@/lib/hooks/useSelection";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,12 +16,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SortDirectionButton } from "@/components/forms/SortDirectionButton";
+import { dateLabel, money } from "@/lib/format";
+import { useMemo, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { BulkDeleteBar } from "@/components/forms/BulkDeleteBar";
-import { money, dateLabel } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import type { TransactionWithCategory } from "@/lib/queries";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import type { CategoryGroup } from "@/types/database";
+import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
+import { SortDirectionButton } from "@/components/forms/SortDirectionButton";
+import type { TransactionWithCategory } from "@/lib/queries";
+import { cn } from "@/lib/utils";
+import { deleteTransactions } from "@/lib/actions";
+import { useSelection } from "@/lib/hooks/useSelection";
 
 type SortKey = "date" | "amount" | "category";
 type GroupFilter = CategoryGroup | "all";
@@ -46,6 +49,9 @@ const SORT_LABELS: Record<SortKey, string> = {
   category: "Category",
 };
 
+const PAGE_SIZE_OPTIONS = [6, 10, 25, 50, 100] as const;
+const DEFAULT_PAGE_SIZE = 6;
+
 export function TransactionsTable({
   transactions,
 }: {
@@ -55,6 +61,8 @@ export function TransactionsTable({
   const [sortKey, setSortKey] = useState<SortKey>("date");
   // Most recent first by default, matching the documents list.
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const presentGroups = useMemo(() => {
     const set = new Set(
@@ -91,6 +99,13 @@ export function TransactionsTable({
   const { selected, toggle, allSelected, toggleAll, clear } =
     useSelection(visibleIds);
 
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  const currentPage = Math.min(page, pageCount - 1);
+  const pagedRows = rows.slice(
+    currentPage * pageSize,
+    (currentPage + 1) * pageSize,
+  );
+
   if (transactions.length === 0) {
     return (
       <Card className="text-muted-foreground px-5 py-6 text-sm">
@@ -106,6 +121,9 @@ export function TransactionsTable({
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="font-medium">Transactions</h2>
+          <span className="text-muted-foreground text-xs">
+            {rows.length} of {transactions.length}
+          </span>
           <BulkDeleteBar
             count={selected.size}
             action={deleteTransactions}
@@ -120,7 +138,10 @@ export function TransactionsTable({
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={groupFilter}
-            onValueChange={(v) => setGroupFilter(v as GroupFilter)}
+            onValueChange={(v) => {
+              setGroupFilter(v as GroupFilter);
+              setPage(0);
+            }}
           >
             <SelectTrigger className="w-44">
               <SelectValue />
@@ -137,7 +158,10 @@ export function TransactionsTable({
 
           <Select
             value={sortKey}
-            onValueChange={(v) => setSortKey(v as SortKey)}
+            onValueChange={(v) => {
+              setSortKey(v as SortKey);
+              setPage(0);
+            }}
           >
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -153,7 +177,10 @@ export function TransactionsTable({
 
           <SortDirectionButton
             sortDir={sortDir}
-            onToggle={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            onToggle={() => {
+              setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+              setPage(0);
+            }}
           />
         </div>
       </div>
@@ -163,71 +190,131 @@ export function TransactionsTable({
           No transactions match this filter.
         </p>
       ) : (
-        <Table className="min-w-[640px]">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="pl-5">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={toggleAll}
-                  aria-label="Select all"
-                />
-              </TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="pr-5" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((t) => {
-              const income = t.transaction_categories?.direction === "income";
-              return (
-                <TableRow key={t.id}>
-                  <TableCell className="pl-5">
-                    <Checkbox
-                      checked={selected.has(t.id)}
-                      onCheckedChange={() => toggle(t.id)}
-                      aria-label={`Select transaction on ${dateLabel(t.txn_date)}`}
-                    />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {dateLabel(t.txn_date)}
-                  </TableCell>
-                  <TableCell>
-                    {t.transaction_categories?.label ?? t.category}
-                    {t.is_estimate && (
-                      <Badge variant="outline" className="ml-2">
-                        Est.
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {t.description}
-                  </TableCell>
-                  <TableCell
-                    className={cn(
-                      "text-right font-mono tabular-nums",
-                      income ? "text-positive" : "text-foreground",
-                    )}
-                  >
-                    {income ? "+" : "−"}
-                    {money(t.amount_cents)}
-                  </TableCell>
-                  <TableCell className="pr-5 text-right">
-                    <Link
-                      href={`/properties/${t.property_id}/transactions/${t.id}`}
-                      className="text-primary text-sm font-medium hover:underline"
+        <>
+          <Table className="min-w-160">
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-5">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="pr-5" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pagedRows.map((t) => {
+                const income = t.transaction_categories?.direction === "income";
+                return (
+                  <TableRow key={t.id}>
+                    <TableCell className="pl-5">
+                      <Checkbox
+                        checked={selected.has(t.id)}
+                        onCheckedChange={() => toggle(t.id)}
+                        aria-label={`Select transaction on ${dateLabel(t.txn_date)}`}
+                      />
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {dateLabel(t.txn_date)}
+                    </TableCell>
+                    <TableCell>
+                      {t.transaction_categories?.label ?? t.category}
+                      {t.is_estimate && (
+                        <Badge variant="outline" className="ml-2">
+                          Est.
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {t.description}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        "text-right font-mono tabular-nums",
+                        income ? "text-positive" : "text-foreground",
+                      )}
                     >
-                      View
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                      {income ? "+" : "−"}
+                      {money(t.amount_cents)}
+                    </TableCell>
+                    <TableCell className="pr-5 text-right">
+                      <Link
+                        href={`/properties/${t.property_id}/transactions/${t.id}`}
+                        className="text-primary text-sm font-medium hover:underline"
+                      >
+                        View
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-muted-foreground text-xs">
+                Showing {currentPage * pageSize + 1}–
+                {Math.min((currentPage + 1) * pageSize, rows.length)} of{" "}
+                {rows.length}
+              </span>
+              <label className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                Rows per page
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(v) => {
+                    setPageSize(Number(v));
+                    setPage(0);
+                  }}
+                >
+                  <SelectTrigger className="w-16" size="sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+            </div>
+            {pageCount > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                >
+                  <ChevronLeft className="size-4" />
+                  Previous
+                </Button>
+                <span className="text-muted-foreground text-xs">
+                  Page {currentPage + 1} of {pageCount}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= pageCount - 1}
+                  onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                >
+                  Next
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </Card>
   );
