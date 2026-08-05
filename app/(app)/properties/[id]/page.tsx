@@ -18,10 +18,12 @@ import {
   getTaxWithHomesteadCents,
   getPropertyMembers,
   getPendingInvites,
+  getEquitySeries,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
 import { MetricsRow } from "@/components/MetricsRow";
+import { EquityChart } from "@/components/EquityChart";
 import { CashflowStrip } from "@/components/CashflowStrip";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { TransactionsTable } from "@/components/TransactionsTable";
@@ -58,6 +60,7 @@ export default async function PropertyPage(props: {
     vacancyPeriods,
     members,
     pendingInvites,
+    equitySeries,
   ] = await Promise.all([
     getLoans(params.id),
     getLoanPayments(params.id),
@@ -69,6 +72,7 @@ export default async function PropertyPage(props: {
     getVacancyPeriods(params.id),
     getPropertyMembers(params.id),
     getPendingInvites(params.id),
+    getEquitySeries(params.id),
   ]);
 
   const homestead = await getHomesteadStatus(params.id);
@@ -143,6 +147,8 @@ export default async function PropertyPage(props: {
         horizon={horizon}
         vacancyPeriods={vacancyPeriods}
       />
+
+      <EquityChart propertyId={params.id} series={equitySeries} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TaxBreakdown

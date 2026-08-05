@@ -180,6 +180,29 @@ export async function createTestLoan(
   return data;
 }
 
+export async function createTestMarketSnapshot(
+  client: Client,
+  userId: string,
+  propertyId: string,
+  overrides: Partial<Tables["market_snapshots"]["Insert"]> = {},
+) {
+  const { data, error } = await client
+    .from("market_snapshots")
+    .insert({
+      user_id: userId,
+      property_id: propertyId,
+      snapshot_date: "2026-06-01",
+      estimated_value_cents: 30_000_000,
+      source: "manual",
+      ...overrides,
+    })
+    .select()
+    .single();
+  if (error || !data)
+    throw error ?? new Error("createTestMarketSnapshot: no row returned");
+  return data;
+}
+
 export async function createTestEscrow(
   client: Client,
   userId: string,
