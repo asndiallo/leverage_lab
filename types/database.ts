@@ -739,6 +739,18 @@ export interface Database {
         Args: { p_property_id: string };
         Returns: { user_id: string; email: string; created_at: Timestamptz }[];
       };
+      loan_balance_cents: {
+        Args: { p_loan_id: string; p_asof?: DateStr };
+        Returns: number;
+      };
+      property_loan_balance_cents: {
+        Args: { p_property_id: string; p_asof?: DateStr };
+        Returns: number;
+      };
+      property_equity_series: {
+        Args: { p_property_id: string };
+        Returns: EquitySeriesPoint[];
+      };
     };
   };
 }
@@ -787,6 +799,18 @@ export interface MonthlyCashflow {
   vacancy_reserve_cents: number;
   maintenance_reserve_cents: number;
   net_cashflow_cents: number;
+}
+
+// Return shape of property_equity_series() — one row per known value point
+// (purchase day, then each manually logged market_snapshots row), ordered by
+// date. equity_cents = value_cents - loan_balance_cents at that date.
+export interface EquitySeriesPoint {
+  id: string | null; // market_snapshots.id; null for the synthetic purchase-day row
+  snapshot_date: DateStr;
+  value_cents: number;
+  loan_balance_cents: number;
+  equity_cents: number;
+  source: MarketSource | "purchase";
 }
 
 // Return shape of property_tax_breakdown() — one row per taxing jurisdiction.
