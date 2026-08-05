@@ -26,6 +26,7 @@ import { CashflowStrip } from "@/components/CashflowStrip";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { TransactionsTable } from "@/components/TransactionsTable";
 import { LeaseForm } from "@/components/forms/LeaseForm";
+import { ImportLeaseDialog } from "@/components/forms/ImportLeaseDialog";
 import { TransactionForm } from "@/components/forms/TransactionForm";
 import { CoOwnersCard } from "@/components/forms/CoOwnersCard";
 
@@ -126,6 +127,7 @@ export default async function PropertyPage(props: {
 
       <div className="flex flex-wrap gap-3">
         <LeaseForm propertyId={params.id} />
+        <ImportLeaseDialog propertyId={params.id} />
         <TransactionForm propertyId={params.id} categories={categories} />
       </div>
 

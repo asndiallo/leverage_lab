@@ -2,16 +2,15 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { firstError, requireUser } from "./shared";
+import {
+  ALLOWED_DOCUMENT_MIME,
+  firstError,
+  requireUser,
+  uploadDocumentFile,
+} from "./shared";
 import type { ActionState } from "@/lib/action-types";
 
 const BUCKET = "documents";
-const ALLOWED_MIME = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
 
 const documentSchema = z.object({
   property_id: z.string().uuid(),
@@ -42,7 +41,7 @@ export async function uploadDocument(
   if (!(file instanceof File) || file.size === 0)
     return { error: "Choose a file to upload" };
   if (file.size > 15 * 1024 * 1024) return { error: "File exceeds 15 MB" };
-  if (file.type && !ALLOWED_MIME.includes(file.type))
+  if (file.type && !ALLOWED_DOCUMENT_MIME.includes(file.type))
     return { error: "Only PDF or image files are allowed" };
 
   const parsed = documentSchema.safeParse({
@@ -55,30 +54,14 @@ export async function uploadDocument(
   if (!parsed.success) return { error: firstError(parsed.error) };
   const v = parsed.data;
 
-  const id = crypto.randomUUID();
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const path = `${user.id}/${v.property_id}/${id}-${safeName}`;
-
-  const { error: upErr } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, { contentType: file.type || undefined, upsert: false });
-  if (upErr) return { error: upErr.message };
-
-  const { error: dErr } = await supabase.from("documents").insert({
-    id,
-    user_id: user.id,
-    property_id: v.property_id,
-    storage_path: path,
-    file_name: file.name,
-    mime_type: file.type || null,
-    size_bytes: file.size,
-    doc_type: v.doc_type,
-    title: v.title || file.name,
+  const uploaded = await uploadDocumentFile(supabase, user, {
+    propertyId: v.property_id,
+    file,
+    docType: v.doc_type,
+    title: v.title,
   });
-  if (dErr) {
-    await supabase.storage.from(BUCKET).remove([path]); // roll back the upload
-    return { error: dErr.message };
-  }
+  if ("error" in uploaded) return { error: uploaded.error };
+  const id = uploaded.id;
 
   // Optionally attach to a transaction or lease via the join table.
   if (v.transaction_id || v.lease_id) {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import type { DocumentType } from "@/types/database";
 
 // Not itself a Server Action (no "use server" here — a "use server" file may
 // only export async functions), just the bits every action in lib/actions/*
@@ -38,4 +39,58 @@ export async function requireUser(): Promise<AuthResult> {
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not signed in" };
   return { ok: true, supabase, user };
+}
+
+const DOCUMENTS_BUCKET = "documents";
+export const ALLOWED_DOCUMENT_MIME = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
+
+/**
+ * Storage upload + `documents` row insert shared by uploadDocument and
+ * importLease. Does not touch document_links — callers link the row to a
+ * transaction/lease themselves, since which they attach to (if any) varies.
+ */
+export async function uploadDocumentFile(
+  supabase: SupabaseServerClient,
+  user: User,
+  args: {
+    propertyId: string;
+    file: File;
+    docType: DocumentType;
+    title?: string;
+  },
+): Promise<{ id: string } | { error: string }> {
+  const id = crypto.randomUUID();
+  const safeName = args.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const path = `${user.id}/${args.propertyId}/${id}-${safeName}`;
+
+  const { error: upErr } = await supabase.storage
+    .from(DOCUMENTS_BUCKET)
+    .upload(path, args.file, {
+      contentType: args.file.type || undefined,
+      upsert: false,
+    });
+  if (upErr) return { error: upErr.message };
+
+  const { error: dErr } = await supabase.from("documents").insert({
+    id,
+    user_id: user.id,
+    property_id: args.propertyId,
+    storage_path: path,
+    file_name: args.file.name,
+    mime_type: args.file.type || null,
+    size_bytes: args.file.size,
+    doc_type: args.docType,
+    title: args.title || args.file.name,
+  });
+  if (dErr) {
+    await supabase.storage.from(DOCUMENTS_BUCKET).remove([path]); // roll back the upload
+    return { error: dErr.message };
+  }
+
+  return { id };
 }
