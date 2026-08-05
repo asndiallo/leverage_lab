@@ -7,6 +7,7 @@ import type {
   MonthlyCashflow,
   LoanPayment,
   VacancyPeriod,
+  EquitySeriesPoint,
 } from "@/types/database";
 
 export async function getProperties(): Promise<Property[]> {
@@ -48,6 +49,17 @@ export async function getPropertyYields(
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+export async function getEquitySeries(
+  id: string,
+): Promise<EquitySeriesPoint[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("property_equity_series", {
+    p_property_id: id,
+  });
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function getVacancyPeriods(id: string): Promise<VacancyPeriod[]> {
