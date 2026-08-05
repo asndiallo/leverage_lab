@@ -6,6 +6,7 @@ export function MetricsRow({
   cashInvestedCents,
   taxBasisCents,
   grossYield,
+  cashOnCash,
   annualTaxCents,
   taxYear,
 }: {
@@ -13,11 +14,12 @@ export function MetricsRow({
   cashInvestedCents: number | null;
   taxBasisCents: number;
   grossYield: number | null;
+  cashOnCash: number | null;
   annualTaxCents: number;
   taxYear: number | null;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
       <StatTile
         label="Monthly cash flow"
         value={moneySigned(stabilizedNetCents)}
@@ -30,6 +32,12 @@ export function MetricsRow({
         label="Gross yield"
         value={percent(grossYield)}
         sub="Annual rent / price"
+      />
+      <StatTile
+        label="Cash on cash"
+        value={percent(cashOnCash)}
+        tone={cashOnCash != null && cashOnCash < 0 ? "negative" : "ink"}
+        sub="Trailing 12mo net / cash invested"
       />
       <StatTile
         label="Property tax"

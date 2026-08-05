@@ -121,6 +121,7 @@ export default async function PropertyPage(props: {
         cashInvestedCents={yields?.total_cash_invested_cents ?? null}
         taxBasisCents={taxBasisCents}
         grossYield={yields?.gross_yield ?? null}
+        cashOnCash={yields?.cash_on_cash ?? null}
         annualTaxCents={annualTaxCents}
         taxYear={taxYear}
       />
