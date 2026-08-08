@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -8,10 +9,42 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { HorizonSelector } from "@/components/HorizonSelector";
 import { money, moneySigned, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MonthlyCashflow, VacancyPeriod } from "@/types/database";
+
+const COLUMN_HELP = {
+  income:
+    "Rent + other income. Historical months use actual transactions; projected months use rent from active leases.",
+  debtService:
+    "Principal, interest, and escrow (taxes, insurance, HOA). Uses actual loan/escrow transactions when reconciled for the month, otherwise the computed payment.",
+  reserves:
+    "Vacancy reserve (% of gross rent) + maintenance reserve (% of purchase price, spread monthly) — modeled allowances, not actual cash held aside.",
+  net: "Income minus debt service, operating expenses, and reserves.",
+} as const;
+
+function ColumnHeaderHint({ label, help }: { label: string; help: string }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      {label}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Info
+            className="text-muted-foreground size-3.5 cursor-help"
+            aria-label={help}
+          />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-64">{help}</TooltipContent>
+      </Tooltip>
+    </span>
+  );
+}
 
 /** last calendar day of the month that a 'YYYY-MM-01' string falls in */
 function monthEnd(firstOfMonth: string): string {
@@ -64,10 +97,21 @@ export function CashflowStrip({
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="pl-5">Month</TableHead>
-            <TableHead className="text-right">Income</TableHead>
-            <TableHead className="text-right">Debt service</TableHead>
-            <TableHead className="text-right">Reserves</TableHead>
-            <TableHead className="pr-5 text-right">Net</TableHead>
+            <TableHead className="text-right">
+              <ColumnHeaderHint label="Income" help={COLUMN_HELP.income} />
+            </TableHead>
+            <TableHead className="text-right">
+              <ColumnHeaderHint
+                label="Debt service"
+                help={COLUMN_HELP.debtService}
+              />
+            </TableHead>
+            <TableHead className="text-right">
+              <ColumnHeaderHint label="Reserves" help={COLUMN_HELP.reserves} />
+            </TableHead>
+            <TableHead className="pr-5 text-right">
+              <ColumnHeaderHint label="Net" help={COLUMN_HELP.net} />
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
