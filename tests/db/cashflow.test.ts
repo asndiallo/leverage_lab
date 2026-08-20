@@ -177,6 +177,36 @@ describe("property_monthly_cashflow", () => {
     }
   });
 
+  it("counts airbnb_income actuals as income with no lease on the property, but still projects the room as vacant going forward", async () => {
+    const property = await createTestProperty(user.client, user.id, {
+      purchase_price_cents: 30_000_000,
+    });
+    try {
+      // Room has no lease at all — pure short-term-rental income.
+      await createTestTransaction(user.client, user.id, property.id, {
+        category: "airbnb_income",
+        amount_cents: 92_000,
+        txn_date: `${PAST_MONTH.slice(0, 7)}-15`,
+      });
+
+      const past = await cashflow(property.id, PAST_MONTH);
+      expect(past.is_projected).toBe(false);
+      expect(past.is_vacant).toBe(false); // never vacant for a historical month
+      expect(past.gross_rent_cents).toBe(0); // not the 'rent' category
+      expect(past.other_income_cents).toBe(92_000);
+      expect(past.income_total_cents).toBe(92_000);
+
+      // No lease exists, so the projection engine still can't see the room
+      // as occupied — this is the gap flagged for STR/Airbnb properties.
+      const future = await cashflow(property.id, FUTURE_MONTH);
+      expect(future.is_projected).toBe(true);
+      expect(future.is_vacant).toBe(true);
+      expect(future.income_total_cents).toBe(0);
+    } finally {
+      await deleteTestProperty(property.id);
+    }
+  });
+
   it("prefers actual loan/escrow transactions over computed debt service even in a projected month", async () => {
     const property = await createTestProperty(user.client, user.id, {
       purchase_price_cents: 24_000_000,

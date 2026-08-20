@@ -85,6 +85,7 @@ export type TransactionCategoryCode =
   | "rent"
   | "late_fee"
   | "utility_reimbursement"
+  | "airbnb_income"
   | "other_income"
   // operating_expense
   | "utilities_electric"
