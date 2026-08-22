@@ -38,6 +38,31 @@ export async function getTransactionDocuments(
     .map((r) => ({ link_id: r.id, doc: r.documents as DocumentRecord }));
 }
 
+/** Documents linked to a set of leases, keyed by lease id — batched so the
+ * property page can fetch every lease's attached document(s) in one query
+ * instead of one per lease. */
+export async function getLeaseDocuments(
+  leaseIds: string[],
+): Promise<Record<string, LinkedDocument[]>> {
+  if (leaseIds.length === 0) return {};
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("document_links")
+    .select("id, lease_id, documents(*)")
+    .in("lease_id", leaseIds);
+  if (error) throw error;
+  const map: Record<string, LinkedDocument[]> = {};
+  for (const row of (data as unknown as {
+    id: string;
+    lease_id: string | null;
+    documents: DocumentRecord | null;
+  }[]) ?? []) {
+    if (!row.lease_id || !row.documents) continue;
+    (map[row.lease_id] ??= []).push({ link_id: row.id, doc: row.documents });
+  }
+  return map;
+}
+
 /** Property docs not linked to any transaction or lease (general/property-level). */
 export async function getUnlinkedPropertyDocuments(
   propertyId: string,

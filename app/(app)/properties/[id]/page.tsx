@@ -19,6 +19,8 @@ import {
   getPropertyMembers,
   getPendingInvites,
   getEquitySeries,
+  getLeases,
+  getLeaseDocuments,
   getPropertySettings,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
@@ -28,6 +30,7 @@ import { EquityChart } from "@/components/EquityChart";
 import { CashflowStrip } from "@/components/CashflowStrip";
 import { TaxBreakdown } from "@/components/TaxBreakdown";
 import { TransactionsTable } from "@/components/TransactionsTable";
+import { LeasesTable } from "@/components/LeasesTable";
 import { LeaseForm } from "@/components/forms/LeaseForm";
 import { ImportLeaseDialog } from "@/components/forms/ImportLeaseDialog";
 import { TransactionForm } from "@/components/forms/TransactionForm";
@@ -64,6 +67,7 @@ export default async function PropertyPage(props: {
     members,
     pendingInvites,
     equitySeries,
+    leases,
     settings,
   ] = await Promise.all([
     getLoans(params.id),
@@ -77,10 +81,12 @@ export default async function PropertyPage(props: {
     getPropertyMembers(params.id),
     getPendingInvites(params.id),
     getEquitySeries(params.id),
+    getLeases(params.id),
     getPropertySettings(params.id),
   ]);
 
   const homestead = await getHomesteadStatus(params.id);
+  const leaseDocuments = await getLeaseDocuments(leases.map((l) => l.id));
 
   const loan = loans.find((l) => l.status === "active") ?? loans[0] ?? null;
   const loanPayment =
@@ -144,6 +150,8 @@ export default async function PropertyPage(props: {
           categories={categories}
         />
       </div>
+
+      <LeasesTable leases={leases} documentsByLease={leaseDocuments} />
 
       <CoOwnersCard
         propertyId={params.id}
