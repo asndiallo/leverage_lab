@@ -31,6 +31,7 @@ import { LeaseForm } from "@/components/forms/LeaseForm";
 import { ImportLeaseDialog } from "@/components/forms/ImportLeaseDialog";
 import { TransactionForm } from "@/components/forms/TransactionForm";
 import { ImportTransactionsDialog } from "@/components/forms/ImportTransactionsDialog";
+import { ScenarioExplorer } from "@/components/ScenarioExplorer";
 import { CoOwnersCard } from "@/components/forms/CoOwnersCard";
 
 export const dynamic = "force-dynamic";
@@ -154,6 +155,23 @@ export default async function PropertyPage(props: {
       />
 
       <EquityChart propertyId={params.id} series={equitySeries} />
+
+      <ScenarioExplorer
+        startMonthISO={startMonth}
+        horizon={horizon}
+        cashflow={cashflow}
+        loan={
+          loan
+            ? {
+                originalAmountCents: loan.original_amount_cents,
+                interestRate: loan.interest_rate,
+                termMonths: loan.term_months,
+                firstPaymentDate: loan.first_payment_date,
+                piOverrideCents: loan.pi_override_cents,
+              }
+            : null
+        }
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TaxBreakdown
