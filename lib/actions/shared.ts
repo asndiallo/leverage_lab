@@ -94,3 +94,30 @@ export async function uploadDocumentFile(
 
   return { id };
 }
+
+/**
+ * Removes a document's storage object and row (document_links rows cascade
+ * via FK). Shared by deleteDocument/deleteDocuments and updateLease's
+ * document-replace step, so "delete a document" stays defined once.
+ */
+export async function deleteDocumentById(
+  supabase: SupabaseServerClient,
+  documentId: string,
+): Promise<{ propertyId: string } | { error: string }> {
+  const { data: doc, error: fErr } = await supabase
+    .from("documents")
+    .select("storage_path, property_id")
+    .eq("id", documentId)
+    .maybeSingle();
+  if (fErr) return { error: fErr.message };
+  if (!doc) return { error: "Document not found" };
+
+  await supabase.storage.from(DOCUMENTS_BUCKET).remove([doc.storage_path]);
+  const { error: dErr } = await supabase
+    .from("documents")
+    .delete()
+    .eq("id", documentId);
+  if (dErr) return { error: dErr.message };
+
+  return { propertyId: doc.property_id };
+}

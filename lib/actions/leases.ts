@@ -6,6 +6,7 @@ import { dollarsToCents } from "@/lib/format";
 import { parseLeasePdf } from "@/lib/lease-parser";
 import {
   ALLOWED_DOCUMENT_MIME,
+  deleteDocumentById,
   firstError,
   money,
   optionalEmail,
@@ -41,6 +42,10 @@ const leaseSchema = leaseFieldsSchema.refine(
 
 const importLeaseSchema = leaseFieldsSchema
   .extend({ notes: z.string().optional().or(z.literal("")) })
+  .refine(endAfterStart, endAfterStartRefinement);
+
+const updateLeaseSchema = leaseFieldsSchema
+  .extend({ id: z.string().uuid() })
   .refine(endAfterStart, endAfterStartRefinement);
 
 export async function addLease(
@@ -181,6 +186,93 @@ export async function importLease(
     lease_id: lease.id,
   });
   if (linkErr) return { error: linkErr.message };
+
+  revalidatePath(`/properties/${v.property_id}`);
+  revalidatePath("/");
+  revalidatePath("/documents");
+  return { ok: true };
+}
+
+/** Updates an existing lease's terms. If a new file is attached, it replaces
+ * whatever document(s) are currently linked to this lease (e.g. a renewal's
+ * signed PDF) — the old document(s) are deleted (storage + row) rather than
+ * left orphaned alongside the new one. The file is optional: editing terms
+ * alone (a rent correction, ending a lease) doesn't require re-uploading. */
+export async function updateLease(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const auth = await requireUser();
+  if (!auth.ok) return { error: auth.error };
+  const { supabase, user } = auth;
+
+  const parsed = updateLeaseSchema.safeParse({
+    id: String(formData.get("id") ?? ""),
+    property_id: String(formData.get("property_id") ?? ""),
+    unit_identifier: String(formData.get("unit_identifier") ?? ""),
+    tenant_name: String(formData.get("tenant_name") ?? ""),
+    tenant_email: String(formData.get("tenant_email") ?? ""),
+    rent_amount: String(formData.get("rent_amount") ?? ""),
+    lease_start: String(formData.get("lease_start") ?? ""),
+    lease_end: String(formData.get("lease_end") ?? ""),
+    flat_utility_charge: String(formData.get("flat_utility_charge") ?? "0"),
+    utilities_included: formData.get("utilities_included") === "on",
+    status: String(formData.get("status") ?? "pending"),
+  });
+  if (!parsed.success) return { error: firstError(parsed.error) };
+  const v = parsed.data;
+
+  const file = formData.get("file");
+  const hasNewFile = file instanceof File && file.size > 0;
+  if (hasNewFile) {
+    if (file.size > 15 * 1024 * 1024) return { error: "File exceeds 15 MB" };
+    if (file.type && !ALLOWED_DOCUMENT_MIME.includes(file.type))
+      return { error: "Only PDF or image files are allowed" };
+  }
+
+  const { error: updErr } = await supabase
+    .from("leases")
+    .update({
+      unit_identifier: v.unit_identifier,
+      tenant_name: v.tenant_name,
+      tenant_email: v.tenant_email || null,
+      rent_amount_cents: dollarsToCents(v.rent_amount),
+      lease_start: v.lease_start,
+      lease_end: v.lease_end || null,
+      utilities_included: v.utilities_included,
+      flat_utility_charge_cents: dollarsToCents(v.flat_utility_charge ?? 0),
+      status: v.status,
+    })
+    .eq("id", v.id);
+  if (updErr) return { error: updErr.message };
+
+  if (hasNewFile) {
+    const { data: existingLinks, error: linksErr } = await supabase
+      .from("document_links")
+      .select("document_id")
+      .eq("lease_id", v.id);
+    if (linksErr) return { error: linksErr.message };
+
+    for (const link of existingLinks ?? []) {
+      const deleted = await deleteDocumentById(supabase, link.document_id);
+      if ("error" in deleted) return { error: deleted.error };
+    }
+
+    const uploaded = await uploadDocumentFile(supabase, user, {
+      propertyId: v.property_id,
+      file,
+      docType: "lease",
+      title: `Lease — ${v.tenant_name}`,
+    });
+    if ("error" in uploaded) return { error: uploaded.error };
+
+    const { error: linkErr } = await supabase.from("document_links").insert({
+      user_id: user.id,
+      document_id: uploaded.id,
+      lease_id: v.id,
+    });
+    if (linkErr) return { error: linkErr.message };
+  }
 
   revalidatePath(`/properties/${v.property_id}`);
   revalidatePath("/");

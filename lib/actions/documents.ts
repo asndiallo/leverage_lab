@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import {
   ALLOWED_DOCUMENT_MIME,
+  deleteDocumentById,
   firstError,
   requireUser,
   uploadDocumentFile,
@@ -139,24 +140,11 @@ export async function deleteDocument(
   const { supabase } = auth;
 
   const id = String(formData.get("document_id") ?? "");
-  const { data: doc, error: fErr } = await supabase
-    .from("documents")
-    .select("storage_path, property_id")
-    .eq("id", id)
-    .maybeSingle();
-  if (fErr) return { error: fErr.message };
-  if (!doc) return { error: "Document not found" };
-
-  await supabase.storage.from(BUCKET).remove([doc.storage_path]);
-  // document_links rows cascade-delete via FK.
-  const { error: dErr } = await supabase
-    .from("documents")
-    .delete()
-    .eq("id", id);
-  if (dErr) return { error: dErr.message };
+  const result = await deleteDocumentById(supabase, id);
+  if ("error" in result) return { error: result.error };
 
   revalidatePath("/documents");
-  revalidatePath(`/properties/${doc.property_id}`);
+  revalidatePath(`/properties/${result.propertyId}`);
   return { ok: true };
 }
 

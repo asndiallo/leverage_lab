@@ -6,3 +6,4 @@ export * from "./queries/tax";
 export * from "./queries/transactions";
 export * from "./queries/co-ownership";
 export * from "./queries/documents";
+export * from "./queries/leases";
