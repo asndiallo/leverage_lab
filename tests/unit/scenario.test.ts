@@ -109,7 +109,9 @@ describe("projectScenario", () => {
     );
     const expectedNewPi = monthlyPiCents(balanceAtRefi, 0.045, 360);
     expect(rows[2].debtServiceCents).toBe(expectedNewPi + escrowCents);
-    expect(rows[2].debtServiceCents).toBeLessThan(rentBaseline.debtServiceCents); // lower rate -> lower payment
+    expect(rows[2].debtServiceCents).toBeLessThan(
+      rentBaseline.debtServiceCents,
+    ); // lower rate -> lower payment
     expect(rows[3].debtServiceCents).toBe(expectedNewPi + escrowCents); // stays refinanced afterward
   });
 

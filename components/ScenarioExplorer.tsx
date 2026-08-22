@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/table";
 import { money, moneySigned, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { projectScenario, type ScenarioBaseline, type ScenarioLoan } from "@/lib/scenario";
+import {
+  projectScenario,
+  type ScenarioBaseline,
+  type ScenarioLoan,
+} from "@/lib/scenario";
 import type { MonthlyCashflow } from "@/types/database";
 
 function Toggle({
@@ -38,7 +42,9 @@ function Toggle({
         {label}
       </label>
       {checked && (
-        <div className="grid grid-cols-2 gap-3 pl-6 sm:grid-cols-4">{children}</div>
+        <div className="grid grid-cols-2 gap-3 pl-6 sm:grid-cols-4">
+          {children}
+        </div>
       )}
     </div>
   );
@@ -88,7 +94,8 @@ export function ScenarioExplorer({
   const [incomeOn, setIncomeOn] = useState(false);
   const [newIncome, setNewIncome] = useState(
     baselineMonth
-      ? (baselineMonth.gross_rent_cents + baselineMonth.other_income_cents) / 100
+      ? (baselineMonth.gross_rent_cents + baselineMonth.other_income_cents) /
+          100
       : 0,
   );
   const [incomeMonth, setIncomeMonth] = useState(0);
@@ -104,7 +111,8 @@ export function ScenarioExplorer({
   const [vacancyOn, setVacancyOn] = useState(false);
   const baselineVacancyRatePct =
     baselineMonth && baselineMonth.gross_rent_cents > 0
-      ? (baselineMonth.vacancy_reserve_cents / baselineMonth.gross_rent_cents) * 100
+      ? (baselineMonth.vacancy_reserve_cents / baselineMonth.gross_rent_cents) *
+        100
       : 5;
   const [vacancyRate, setVacancyRate] = useState(baselineVacancyRatePct);
 
@@ -162,7 +170,10 @@ export function ScenarioExplorer({
   if (!baselineMonth) return null;
 
   const baselineTotal = cashflow.reduce((s, m) => s + m.net_cashflow_cents, 0);
-  const scenarioTotal = scenarioRows.reduce((s, m) => s + m.netCashflowCents, 0);
+  const scenarioTotal = scenarioRows.reduce(
+    (s, m) => s + m.netCashflowCents,
+    0,
+  );
   const anyActive = incomeOn || refiOn || vacancyOn || expenseOn;
 
   return (
@@ -170,15 +181,28 @@ export function ScenarioExplorer({
       <div className="border-b px-5 py-3">
         <h2 className="font-medium">What-if scenarios</h2>
         <p className="text-muted-foreground text-xs">
-          Adjust assumptions below to see how they&apos;d change the {horizon}-month
-          projection — nothing here is saved.
+          Adjust assumptions below to see how they&apos;d change the {horizon}
+          -month projection — nothing here is saved.
         </p>
       </div>
 
       <div className="space-y-4 border-b px-5 py-4">
-        <Toggle label="Change monthly income" checked={incomeOn} onCheckedChange={setIncomeOn}>
-          <NumberField label="New monthly income ($)" value={newIncome} onChange={setNewIncome} step="0.01" />
-          <NumberField label="Effective in (months)" value={incomeMonth} onChange={setIncomeMonth} />
+        <Toggle
+          label="Change monthly income"
+          checked={incomeOn}
+          onCheckedChange={setIncomeOn}
+        >
+          <NumberField
+            label="New monthly income ($)"
+            value={newIncome}
+            onChange={setNewIncome}
+            step="0.01"
+          />
+          <NumberField
+            label="Effective in (months)"
+            value={incomeMonth}
+            onChange={setIncomeMonth}
+          />
         </Toggle>
 
         <Toggle
@@ -188,10 +212,28 @@ export function ScenarioExplorer({
         >
           {loan ? (
             <>
-              <NumberField label="New rate (%)" value={refiRate} onChange={setRefiRate} step="0.01" />
-              <NumberField label="New term (years)" value={refiTermYears} onChange={setRefiTermYears} />
-              <NumberField label="Effective in (months)" value={refiMonth} onChange={setRefiMonth} />
-              <NumberField label="One-time cost ($)" value={refiCost} onChange={setRefiCost} step="0.01" />
+              <NumberField
+                label="New rate (%)"
+                value={refiRate}
+                onChange={setRefiRate}
+                step="0.01"
+              />
+              <NumberField
+                label="New term (years)"
+                value={refiTermYears}
+                onChange={setRefiTermYears}
+              />
+              <NumberField
+                label="Effective in (months)"
+                value={refiMonth}
+                onChange={setRefiMonth}
+              />
+              <NumberField
+                label="One-time cost ($)"
+                value={refiCost}
+                onChange={setRefiCost}
+                step="0.01"
+              />
             </>
           ) : (
             <p className="text-muted-foreground col-span-full text-xs">
@@ -205,7 +247,12 @@ export function ScenarioExplorer({
           checked={vacancyOn}
           onCheckedChange={setVacancyOn}
         >
-          <NumberField label="Vacancy rate (%)" value={vacancyRate} onChange={setVacancyRate} step="0.1" />
+          <NumberField
+            label="Vacancy rate (%)"
+            value={vacancyRate}
+            onChange={setVacancyRate}
+            step="0.1"
+          />
         </Toggle>
 
         <Toggle
@@ -213,7 +260,12 @@ export function ScenarioExplorer({
           checked={expenseOn}
           onCheckedChange={setExpenseOn}
         >
-          <NumberField label="+/- per month ($)" value={expenseDelta} onChange={setExpenseDelta} step="0.01" />
+          <NumberField
+            label="+/- per month ($)"
+            value={expenseDelta}
+            onChange={setExpenseDelta}
+            step="0.01"
+          />
         </Toggle>
       </div>
 

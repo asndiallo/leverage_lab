@@ -71,9 +71,7 @@ export function monthlyPiCents(
   if (!termMonths || termMonths <= 0) return 0;
   if (!annualRate) return Math.round(principalCents / termMonths);
   const r = annualRate / 12;
-  return Math.round(
-    (principalCents * r) / (1 - Math.pow(1 + r, -termMonths)),
-  );
+  return Math.round((principalCents * r) / (1 - Math.pow(1 + r, -termMonths)));
 }
 
 /** Remaining principal after `paymentsMade` monthly payments, amortizing
@@ -127,7 +125,11 @@ export function projectScenario(
 
   const baselinePiCents = loan
     ? (loan.piOverrideCents ??
-      monthlyPiCents(loan.originalAmountCents, loan.interestRate, loan.termMonths))
+      monthlyPiCents(
+        loan.originalAmountCents,
+        loan.interestRate,
+        loan.termMonths,
+      ))
     : 0;
   const escrowCents = baseline.debtServiceCents - baselinePiCents;
 
@@ -170,8 +172,11 @@ export function projectScenario(
     }
 
     const operatingExpenseCents =
-      baseline.operatingExpenseCents + (overrides.extraMonthlyExpenseCents ?? 0);
-    const vacancyReserveCents = Math.round(grossRentForVacancyCents * vacancyRate);
+      baseline.operatingExpenseCents +
+      (overrides.extraMonthlyExpenseCents ?? 0);
+    const vacancyReserveCents = Math.round(
+      grossRentForVacancyCents * vacancyRate,
+    );
     const maintenanceReserveCents = baseline.maintenanceReserveCents;
 
     const netCashflowCents =
