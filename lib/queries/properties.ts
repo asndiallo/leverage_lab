@@ -8,6 +8,7 @@ import type {
   LoanPayment,
   VacancyPeriod,
   EquitySeriesPoint,
+  PropertySettings,
 } from "@/types/database";
 
 export async function getProperties(): Promise<Property[]> {
@@ -71,6 +72,19 @@ export async function getVacancyPeriods(id: string): Promise<VacancyPeriod[]> {
     .order("start_date", { ascending: true });
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getPropertySettings(
+  id: string,
+): Promise<PropertySettings | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("property_settings")
+    .select("*")
+    .eq("property_id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }
 
 export async function getLoans(id: string): Promise<Loan[]> {

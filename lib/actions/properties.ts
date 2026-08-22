@@ -97,3 +97,50 @@ export async function addProperty(
   revalidatePath("/");
   return { ok: true };
 }
+
+// ---------------------------------------------------------------------------
+// Reserve settings (vacancy / maintenance rates used by property_monthly_cashflow)
+// ---------------------------------------------------------------------------
+const propertySettingsSchema = z.object({
+  property_id: z.string().uuid(),
+  vacancy_reserve_rate: z.coerce
+    .number()
+    .min(0, "Must be 0 or greater")
+    .max(100, "Must be 100 or less"),
+  maintenance_reserve_rate: z.coerce
+    .number()
+    .min(0, "Must be 0 or greater")
+    .max(100, "Must be 100 or less"),
+});
+
+export async function updatePropertySettings(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const auth = await requireUser();
+  if (!auth.ok) return { error: auth.error };
+  const { supabase } = auth;
+
+  const parsed = propertySettingsSchema.safeParse({
+    property_id: String(formData.get("property_id") ?? ""),
+    vacancy_reserve_rate: String(formData.get("vacancy_reserve_rate") ?? ""),
+    maintenance_reserve_rate: String(
+      formData.get("maintenance_reserve_rate") ?? "",
+    ),
+  });
+  if (!parsed.success) return { error: firstError(parsed.error) };
+  const v = parsed.data;
+
+  const { error } = await supabase
+    .from("property_settings")
+    .update({
+      vacancy_reserve_rate: v.vacancy_reserve_rate / 100,
+      maintenance_reserve_rate: v.maintenance_reserve_rate / 100,
+    })
+    .eq("property_id", v.property_id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${v.property_id}`);
+  revalidatePath("/");
+  return { ok: true };
+}

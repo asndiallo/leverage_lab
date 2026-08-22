@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HorizonSelector } from "@/components/HorizonSelector";
+import { ReserveSettingsDialog } from "@/components/forms/ReserveSettingsDialog";
 import { money, moneySigned, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MonthlyCashflow, VacancyPeriod } from "@/types/database";
@@ -70,10 +71,16 @@ export function CashflowStrip({
   rows,
   horizon,
   vacancyPeriods = [],
+  propertyId,
+  vacancyReserveRate,
+  maintenanceReserveRate,
 }: {
   rows: MonthlyCashflow[];
   horizon: number;
   vacancyPeriods?: VacancyPeriod[];
+  propertyId: string;
+  vacancyReserveRate: number;
+  maintenanceReserveRate: number;
 }) {
   return (
     <Card className="gap-0 p-0">
@@ -90,6 +97,11 @@ export function CashflowStrip({
               vacant
             </span>
           </span>
+          <ReserveSettingsDialog
+            propertyId={propertyId}
+            vacancyReserveRate={vacancyReserveRate}
+            maintenanceReserveRate={maintenanceReserveRate}
+          />
           <HorizonSelector current={horizon} />
         </div>
       </div>
