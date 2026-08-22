@@ -58,11 +58,7 @@ export function EditLeaseForm({
           />
         </Field>
         <Field label="Tenant name">
-          <Input
-            name="tenant_name"
-            required
-            defaultValue={lease.tenant_name}
-          />
+          <Input name="tenant_name" required defaultValue={lease.tenant_name} />
         </Field>
         <Field label="Tenant email">
           <Input
