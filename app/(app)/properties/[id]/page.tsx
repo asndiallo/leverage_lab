@@ -19,6 +19,7 @@ import {
   getPropertyMembers,
   getPendingInvites,
   getEquitySeries,
+  getPropertySettings,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
@@ -63,6 +64,7 @@ export default async function PropertyPage(props: {
     members,
     pendingInvites,
     equitySeries,
+    settings,
   ] = await Promise.all([
     getLoans(params.id),
     getLoanPayments(params.id),
@@ -75,6 +77,7 @@ export default async function PropertyPage(props: {
     getPropertyMembers(params.id),
     getPendingInvites(params.id),
     getEquitySeries(params.id),
+    getPropertySettings(params.id),
   ]);
 
   const homestead = await getHomesteadStatus(params.id);
@@ -152,6 +155,9 @@ export default async function PropertyPage(props: {
         rows={cashflow}
         horizon={horizon}
         vacancyPeriods={vacancyPeriods}
+        propertyId={params.id}
+        vacancyReserveRate={settings?.vacancy_reserve_rate ?? 0.05}
+        maintenanceReserveRate={settings?.maintenance_reserve_rate ?? 0.01}
       />
 
       <EquityChart propertyId={params.id} series={equitySeries} />
