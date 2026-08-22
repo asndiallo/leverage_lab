@@ -25,7 +25,12 @@ export type ParsedTransactionsResult = {
   warnings: string[];
 };
 
-const DATE_ALIASES = ["date", "transaction date", "posted date", "posting date"];
+const DATE_ALIASES = [
+  "date",
+  "transaction date",
+  "posted date",
+  "posting date",
+];
 const DESCRIPTION_ALIASES = [
   "description",
   "memo",
@@ -136,7 +141,9 @@ function guessCategory(
   return "";
 }
 
-export function parseTransactionsCsv(csvText: string): ParsedTransactionsResult {
+export function parseTransactionsCsv(
+  csvText: string,
+): ParsedTransactionsResult {
   const lines = csvText
     .split(/\r\n|\r|\n/)
     .filter((line) => line.trim() !== "");
