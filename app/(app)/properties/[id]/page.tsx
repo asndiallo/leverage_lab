@@ -30,6 +30,7 @@ import { TransactionsTable } from "@/components/TransactionsTable";
 import { LeaseForm } from "@/components/forms/LeaseForm";
 import { ImportLeaseDialog } from "@/components/forms/ImportLeaseDialog";
 import { TransactionForm } from "@/components/forms/TransactionForm";
+import { ImportTransactionsDialog } from "@/components/forms/ImportTransactionsDialog";
 import { CoOwnersCard } from "@/components/forms/CoOwnersCard";
 
 export const dynamic = "force-dynamic";
@@ -134,6 +135,10 @@ export default async function PropertyPage(props: {
         <LeaseForm propertyId={params.id} />
         <ImportLeaseDialog propertyId={params.id} />
         <TransactionForm propertyId={params.id} categories={categories} />
+        <ImportTransactionsDialog
+          propertyId={params.id}
+          categories={categories}
+        />
       </div>
 
       <CoOwnersCard

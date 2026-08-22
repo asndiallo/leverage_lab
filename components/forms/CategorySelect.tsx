@@ -27,10 +27,16 @@ export function CategorySelect({
   categories,
   name = "category",
   defaultValue = "",
+  value,
+  onValueChange,
 }: {
   categories: CategoryOption[];
   name?: string;
   defaultValue?: string;
+  /** Controlled mode (e.g. one row of a dynamic table) — pass alongside
+   * onValueChange instead of defaultValue. */
+  value?: string;
+  onValueChange?: (value: string) => void;
 }) {
   const grouped = new Map<CategoryGroup, CategoryOption[]>();
   for (const c of categories) {
@@ -38,8 +44,12 @@ export function CategorySelect({
     arr.push(c);
     grouped.set(c.category_group, arr);
   }
+  const controlled =
+    value !== undefined
+      ? { value, onValueChange }
+      : { defaultValue: defaultValue || undefined };
   return (
-    <Select name={name} required defaultValue={defaultValue || undefined}>
+    <Select name={name} required {...controlled}>
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select…" />
       </SelectTrigger>
