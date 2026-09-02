@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EditLeaseForm } from "@/components/forms/EditLeaseForm";
+import { DeleteLeaseButton } from "@/components/forms/DeleteLeaseButton";
 import { dateLabel, money } from "@/lib/format";
 import type { Lease, LeaseStatus } from "@/types/database";
 import type { LinkedDocument } from "@/lib/queries";
@@ -63,10 +64,17 @@ export function LeasesTable({
                 </Badge>
               </TableCell>
               <TableCell className="pr-5 text-right">
-                <EditLeaseForm
-                  lease={lease}
-                  documents={documentsByLease[lease.id]}
-                />
+                <div className="flex justify-end gap-1">
+                  <EditLeaseForm
+                    lease={lease}
+                    documents={documentsByLease[lease.id]}
+                  />
+                  <DeleteLeaseButton
+                    leaseId={lease.id}
+                    propertyId={lease.property_id}
+                    hasDocuments={(documentsByLease[lease.id]?.length ?? 0) > 0}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}

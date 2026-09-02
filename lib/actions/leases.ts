@@ -279,3 +279,38 @@ export async function updateLease(
   revalidatePath("/documents");
   return { ok: true };
 }
+
+/** Deletes a lease along with any document(s) linked to it (storage object +
+ * row) — document_links rows for this lease cascade via FK, but the
+ * documents themselves don't, so they're cleaned up explicitly first, same
+ * as updateLease's file-replace step. */
+export async function deleteLease(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const auth = await requireUser();
+  if (!auth.ok) return { error: auth.error };
+  const { supabase } = auth;
+
+  const id = String(formData.get("id") ?? "");
+  const propertyId = String(formData.get("property_id") ?? "");
+
+  const { data: links, error: linksErr } = await supabase
+    .from("document_links")
+    .select("document_id")
+    .eq("lease_id", id);
+  if (linksErr) return { error: linksErr.message };
+
+  for (const link of links ?? []) {
+    const deleted = await deleteDocumentById(supabase, link.document_id);
+    if ("error" in deleted) return { error: deleted.error };
+  }
+
+  const { error } = await supabase.from("leases").delete().eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/properties/${propertyId}`);
+  revalidatePath("/");
+  revalidatePath("/documents");
+  return { ok: true };
+}
