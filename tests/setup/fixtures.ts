@@ -252,6 +252,51 @@ export async function createTestLease(
   return data;
 }
 
+export async function createTestRentalUsePeriod(
+  client: Client,
+  userId: string,
+  propertyId: string,
+  overrides: Partial<Tables["rental_use_periods"]["Insert"]> = {},
+) {
+  const { data, error } = await client
+    .from("rental_use_periods")
+    .insert({
+      user_id: userId,
+      property_id: propertyId,
+      effective_date: "2026-01-01",
+      rental_use_percent: 0.5,
+      method: "square_footage",
+      ...overrides,
+    })
+    .select()
+    .single();
+  if (error || !data)
+    throw error ?? new Error("createTestRentalUsePeriod: no row returned");
+  return data;
+}
+
+export async function createTestUtilityAccount(
+  client: Client,
+  userId: string,
+  propertyId: string,
+  overrides: Partial<Tables["utility_accounts"]["Insert"]> = {},
+) {
+  const { data, error } = await client
+    .from("utility_accounts")
+    .insert({
+      user_id: userId,
+      property_id: propertyId,
+      provider_name: "Test Utility Co",
+      service_type: "electric",
+      ...overrides,
+    })
+    .select()
+    .single();
+  if (error || !data)
+    throw error ?? new Error("createTestUtilityAccount: no row returned");
+  return data;
+}
+
 export async function createTestTransaction(
   client: Client,
   userId: string,

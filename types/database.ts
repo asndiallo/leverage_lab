@@ -77,6 +77,20 @@ export type DocumentType =
   | "appraisal"
   | "other";
 
+export type RentalUseMethod = "square_footage" | "room_count" | "other";
+
+// transaction_categories.schedule_e_line — which Schedule E report line an
+// operating-expense category rolls up into (null = not on Schedule E, or
+// handled by a dedicated computed line like mortgage_interest/taxes/depreciation).
+export type ScheduleELineCode =
+  | "utilities"
+  | "insurance"
+  | "hoa"
+  | "repairs"
+  | "supplies"
+  | "management_fees"
+  | "other";
+
 // Transaction category codes (seeded rows in transaction_categories).
 // Kept as a string-literal union for compile-time safety even though the DB
 // stores it as a text FK (so new categories can be added without a type migration).
@@ -291,6 +305,7 @@ export interface Database {
           property_id: string;
           vacancy_reserve_rate: number;
           maintenance_reserve_rate: number;
+          total_rooms: number | null;
           created_at: Timestamptz;
           updated_at: Timestamptz;
         };
@@ -300,6 +315,7 @@ export interface Database {
           property_id: string;
           vacancy_reserve_rate?: number;
           maintenance_reserve_rate?: number;
+          total_rooms?: number | null;
           created_at?: Timestamptz;
           updated_at?: Timestamptz;
         };
@@ -499,6 +515,33 @@ export interface Database {
         Relationships: [];
       };
 
+      rental_use_periods: {
+        Row: {
+          id: string;
+          user_id: string;
+          property_id: string;
+          effective_date: DateStr;
+          rental_use_percent: number;
+          method: RentalUseMethod;
+          notes: string | null;
+          created_at: Timestamptz;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          property_id: string;
+          effective_date: DateStr;
+          rental_use_percent: number;
+          method?: RentalUseMethod;
+          notes?: string | null;
+          created_at?: Timestamptz;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["rental_use_periods"]["Insert"]
+        >;
+        Relationships: [];
+      };
+
       transaction_categories: {
         Row: {
           code: TransactionCategoryCode;
@@ -506,6 +549,8 @@ export interface Database {
           direction: TransactionDirection;
           label: string;
           sort_order: number;
+          schedule_e_line: ScheduleELineCode | null;
+          prorate_by_rental_use: boolean;
         };
         Insert: {
           code: string;
@@ -513,6 +558,8 @@ export interface Database {
           direction: TransactionDirection;
           label: string;
           sort_order?: number;
+          schedule_e_line?: ScheduleELineCode | null;
+          prorate_by_rental_use?: boolean;
         };
         Update: Partial<
           Database["public"]["Tables"]["transaction_categories"]["Insert"]
@@ -752,6 +799,74 @@ export interface Database {
         Args: { p_property_id: string };
         Returns: EquitySeriesPoint[];
       };
+      property_current_rental_use: {
+        Args: { p_property_id: string; p_asof?: DateStr };
+        Returns: Database["public"]["Tables"]["rental_use_periods"]["Row"];
+      };
+      property_rental_use_percent_for_year: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: number | null;
+      };
+      loan_payments_made: {
+        Args: { p_loan_id: string; p_asof?: DateStr };
+        Returns: number;
+      };
+      loan_interest_paid_cents: {
+        Args: { p_loan_id: string; p_from: DateStr; p_to: DateStr };
+        Returns: number;
+      };
+      property_annual_interest_paid_cents: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: number;
+      };
+      depreciation_asset_year_cents: {
+        Args: {
+          p_basis_cents: number;
+          p_placed_in_service: DateStr;
+          p_tax_year: number;
+        };
+        Returns: number;
+      };
+      property_building_basis_cents: {
+        Args: { p_property_id: string };
+        Returns: number | null;
+      };
+      property_annual_depreciation_cents: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: number | null;
+      };
+      property_schedule_e: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: ScheduleELineRow[];
+      };
+      property_auto_placed_in_service: {
+        Args: { p_property_id: string };
+        Returns: DateStr | null;
+      };
+      property_auto_rental_use_percent: {
+        Args: { p_property_id: string; p_asof?: DateStr };
+        Returns: number | null;
+      };
+      property_effective_rental_use_percent: {
+        Args: { p_property_id: string; p_asof?: DateStr };
+        Returns: number | null;
+      };
+      property_current_rental_use_percent: {
+        Args: { p_property_id: string; p_asof?: DateStr };
+        Returns: number | null;
+      };
+      property_annual_insurance_cents: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: { amount_cents: number; is_actual: boolean }[];
+      };
+      property_annual_hoa_cents: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: { amount_cents: number; is_actual: boolean }[];
+      };
+      property_annual_utilities_cents: {
+        Args: { p_property_id: string; p_tax_year: number };
+        Returns: { amount_cents: number; is_actual: boolean }[];
+      };
     };
   };
 }
@@ -782,6 +897,7 @@ export type Transaction = Tables<"transactions">;
 export type MarketSnapshot = Tables<"market_snapshots">;
 export type UtilityAccount = Tables<"utility_accounts">;
 export type DocumentRecord = Tables<"documents">;
+export type RentalUsePeriod = Tables<"rental_use_periods">;
 
 export type LoanPayment = Database["public"]["Views"]["v_loan_payment"]["Row"];
 export type PropertyYields =
@@ -824,4 +940,24 @@ export interface TaxBreakdownRow {
   exemption_cents: number;
   taxable_cents: number;
   tax_cents: number;
+}
+
+// Return shape of property_schedule_e() — one row per Schedule E line, already
+// prorated by rental-use % where applicable (is_prorated). `source` tells the
+// UI whether the number is real transaction data ('actual'), engine-computed
+// ('computed'), or an unprorated fallback because rental-use % isn't set up
+// yet for that year ('not_configured').
+export type ScheduleELineCodeOrIncome =
+  | ScheduleELineCode
+  | "rents_received"
+  | "mortgage_interest"
+  | "taxes"
+  | "depreciation";
+
+export interface ScheduleELineRow {
+  line_code: ScheduleELineCodeOrIncome;
+  label: string;
+  amount_cents: number;
+  is_prorated: boolean;
+  source: "actual" | "computed" | "not_configured";
 }
