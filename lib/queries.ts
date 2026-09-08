@@ -7,3 +7,4 @@ export * from "./queries/transactions";
 export * from "./queries/co-ownership";
 export * from "./queries/documents";
 export * from "./queries/leases";
+export * from "./queries/schedule-e";

@@ -22,6 +22,10 @@ import {
   getLeases,
   getLeaseDocuments,
   getPropertySettings,
+  getRentalUsePeriods,
+  getCurrentRentalUsePercent,
+  getAutoPlacedInService,
+  getScheduleE,
 } from "@/lib/queries";
 import { firstOfMonthISO, laterMonthISO } from "@/lib/format";
 import { HeaderCard } from "@/components/HeaderCard";
@@ -37,6 +41,7 @@ import { TransactionForm } from "@/components/forms/TransactionForm";
 import { ImportTransactionsDialog } from "@/components/forms/ImportTransactionsDialog";
 import { ScenarioExplorer } from "@/components/ScenarioExplorer";
 import { CoOwnersCard } from "@/components/forms/CoOwnersCard";
+import { ScheduleE } from "@/components/ScheduleE";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +49,7 @@ const HORIZONS = [12, 24, 60];
 
 export default async function PropertyPage(props: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ horizon?: string }>;
+  searchParams: Promise<{ horizon?: string; scheduleEYear?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const params = await props.params;
@@ -54,6 +59,18 @@ export default async function PropertyPage(props: {
   const horizon = HORIZONS.includes(Number(searchParams.horizon))
     ? Number(searchParams.horizon)
     : 12;
+
+  const purchaseYear = Number(property.purchase_date.slice(0, 4));
+  const currentYear = new Date().getFullYear();
+  const scheduleEYears = Array.from(
+    { length: Math.max(currentYear - purchaseYear + 1, 1) },
+    (_, i) => currentYear - i,
+  );
+  const scheduleEYear = scheduleEYears.includes(
+    Number(searchParams.scheduleEYear),
+  )
+    ? Number(searchParams.scheduleEYear)
+    : currentYear;
 
   const [
     loans,
@@ -69,6 +86,10 @@ export default async function PropertyPage(props: {
     equitySeries,
     leases,
     settings,
+    rentalUsePeriods,
+    currentRentalUsePercent,
+    autoPlacedInService,
+    scheduleELines,
   ] = await Promise.all([
     getLoans(params.id),
     getLoanPayments(params.id),
@@ -83,6 +104,10 @@ export default async function PropertyPage(props: {
     getEquitySeries(params.id),
     getLeases(params.id),
     getPropertySettings(params.id),
+    getRentalUsePeriods(params.id),
+    getCurrentRentalUsePercent(params.id),
+    getAutoPlacedInService(params.id),
+    getScheduleE(params.id, scheduleEYear),
   ]);
 
   const homestead = await getHomesteadStatus(params.id);
@@ -198,6 +223,18 @@ export default async function PropertyPage(props: {
         />
         <TransactionsTable transactions={transactions} />
       </div>
+
+      <ScheduleE
+        propertyId={params.id}
+        year={scheduleEYear}
+        years={scheduleEYears}
+        rows={scheduleELines}
+        rentalUsePeriods={rentalUsePeriods}
+        currentRentalUsePercent={currentRentalUsePercent}
+        totalRooms={settings?.total_rooms ?? null}
+        leasedUnitCount={new Set(leases.map((l) => l.unit_identifier)).size}
+        autoPlacedInService={autoPlacedInService}
+      />
     </div>
   );
 }

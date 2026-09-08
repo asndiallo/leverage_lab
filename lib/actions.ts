@@ -9,3 +9,4 @@ export * from "./actions/homestead";
 export * from "./actions/documents";
 export * from "./actions/co-ownership";
 export * from "./actions/market-snapshots";
+export * from "./actions/rental-use";
