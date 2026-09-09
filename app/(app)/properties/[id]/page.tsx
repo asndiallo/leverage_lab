@@ -10,6 +10,7 @@ import {
   getTaxBasisCents,
   getLatestTaxRateYear,
   getTaxBreakdown,
+  getTaxingJurisdictions,
   getCashflowRange,
   getTransactions,
   getCategories,
@@ -90,6 +91,7 @@ export default async function PropertyPage(props: {
     currentRentalUsePercent,
     autoPlacedInService,
     scheduleELines,
+    taxingJurisdictions,
   ] = await Promise.all([
     getLoans(params.id),
     getLoanPayments(params.id),
@@ -108,6 +110,7 @@ export default async function PropertyPage(props: {
     getCurrentRentalUsePercent(params.id),
     getAutoPlacedInService(params.id),
     getScheduleE(params.id, scheduleEYear),
+    getTaxingJurisdictions(params.id),
   ]);
 
   const homestead = await getHomesteadStatus(params.id);
@@ -220,6 +223,7 @@ export default async function PropertyPage(props: {
           annualTaxCents={annualTaxCents}
           withHomesteadCents={withHomesteadCents}
           homesteadFiled={homestead.filed}
+          jurisdictions={taxingJurisdictions}
         />
         <TransactionsTable transactions={transactions} />
       </div>
