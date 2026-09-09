@@ -6,6 +6,8 @@ export * from "./actions/properties";
 export * from "./actions/leases";
 export * from "./actions/transactions";
 export * from "./actions/homestead";
+export * from "./actions/tax";
 export * from "./actions/documents";
 export * from "./actions/co-ownership";
 export * from "./actions/market-snapshots";
+export * from "./actions/rental-use";

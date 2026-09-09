@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/table";
 import { money, taxRatePer100 } from "@/lib/format";
 import { HomesteadToggle } from "@/components/HomesteadToggle";
-import type { TaxBreakdownRow } from "@/types/database";
+import { AddTaxYearForm } from "@/components/forms/AddTaxYearForm";
+import { AddAssessedValueForm } from "@/components/forms/AddAssessedValueForm";
+import type { TaxBreakdownRow, TaxingJurisdiction } from "@/types/database";
 
 export function TaxBreakdown({
   rows,
@@ -19,6 +21,7 @@ export function TaxBreakdown({
   annualTaxCents,
   withHomesteadCents,
   homesteadFiled,
+  jurisdictions,
 }: {
   rows: TaxBreakdownRow[];
   year: number | null;
@@ -26,18 +29,36 @@ export function TaxBreakdown({
   annualTaxCents: number;
   withHomesteadCents: number;
   homesteadFiled: boolean;
+  jurisdictions: TaxingJurisdiction[];
 }) {
   const total = rows.reduce((s, r) => s + r.tax_cents, 0);
   const savings = annualTaxCents - withHomesteadCents;
 
   return (
     <Card className="gap-0 p-0">
-      <div className="border-b px-5 py-3">
-        <h2 className="font-medium">Property tax{year ? ` — ${year}` : ""}</h2>
-        <p className="text-muted-foreground text-xs">
-          Guadalupe County · multi-jurisdiction
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
+        <div>
+          <h2 className="font-medium">
+            Property tax{year ? ` — ${year}` : ""}
+          </h2>
+          <p className="text-muted-foreground text-xs">
+            Guadalupe County · multi-jurisdiction
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <AddAssessedValueForm propertyId={propertyId} />
+          <AddTaxYearForm
+            propertyId={propertyId}
+            jurisdictions={jurisdictions}
+          />
+        </div>
       </div>
+      {rows.length === 0 && (
+        <p className="text-muted-foreground border-b px-5 py-3 text-xs">
+          No tax rates on record for {year ?? "this year"} yet — add them above
+          once your county certificate arrives.
+        </p>
+      )}
       <Table className="min-w-[520px]">
         <TableHeader>
           <TableRow className="hover:bg-transparent">

@@ -1,5 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
-import type { TaxBreakdownRow } from "@/types/database";
+import type { TaxBreakdownRow, TaxingJurisdiction } from "@/types/database";
+
+/** Every taxing jurisdiction on record for the property (not year-specific —
+ * used to build the "add a tax year" form's per-jurisdiction rate inputs). */
+export async function getTaxingJurisdictions(
+  id: string,
+): Promise<TaxingJurisdiction[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("taxing_jurisdictions")
+    .select("*")
+    .eq("property_id", id)
+    .order("name");
+  if (error) throw error;
+  return data ?? [];
+}
 
 /** Latest tax year that actually has adopted rates for this property. */
 export async function getLatestTaxRateYear(id: string): Promise<number | null> {

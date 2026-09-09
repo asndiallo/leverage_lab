@@ -51,6 +51,31 @@ describe("parseTransactionsCsv", () => {
     ]);
   });
 
+  it("parses a Capital One-style export: prefixed headers + a single always-positive amount with a separate Type column", () => {
+    const csv = [
+      "Account Number,Transaction Description,Transaction Date,Transaction Type,Transaction Amount,Balance",
+      "9097,Deposit from ZG - Your Rental Rent-#3 11,09/03/26,Credit,750,1915.96",
+      "9097,Withdrawal from CHASE CREDIT CRD EPAY,09/02/26,Debit,949.24,956.76",
+    ].join("\n");
+
+    const { rows, warnings } = parseTransactionsCsv(csv);
+    expect(warnings).toEqual([]);
+    expect(rows).toEqual([
+      {
+        txn_date: "2026-09-03",
+        description: "Deposit from ZG - Your Rental Rent-#3 11",
+        amount: "750.00",
+        suggested_category: "rent",
+      },
+      {
+        txn_date: "2026-09-02",
+        description: "Withdrawal from CHASE CREDIT CRD EPAY",
+        amount: "949.24",
+        suggested_category: "",
+      },
+    ]);
+  });
+
   it("handles quoted fields containing commas", () => {
     const csv = [
       "Date,Description,Amount",

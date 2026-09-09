@@ -53,9 +53,29 @@ const PERSONAL_USE_HINT =
 // property expense: an electric toothbrush and floss picks. Everything else
 // PERSONAL_USE_HINT flagged (coffee maker/coffee/filters, a mug kit, a
 // coffee table) was confirmed fine to keep as "supplies".
+//
+// 2026-09-08 batch: groceries/spices and a car windshield sun shade excluded
+// as personal consumption/personal-vehicle items — nothing a tenant could
+// use. The Qtip holder dispenser is in the owner's personal bathroom, not a
+// shared one. (Office furniture and bedding from the same batch WERE kept —
+// confirmed as furnishing a tenant's room, not the owner's own space.)
 const MANUAL_EXCLUSIONS: { title: RegExp; reason: string }[] = [
   { title: /Aquasonic.*Toothbrush/i, reason: "Personal use" },
   { title: /Plackers.*Floss/i, reason: "Personal use" },
+  {
+    title: /McCormick.*Garlic Butter Seasoning/i,
+    reason: "Personal groceries",
+  },
+  { title: /Amazon Grocery.*Tomato Paste/i, reason: "Personal groceries" },
+  { title: /Amazon Grocery.*Paprika/i, reason: "Personal groceries" },
+  { title: /Goya.*Golden Corn/i, reason: "Personal groceries" },
+  { title: /Goya.*Chick Peas/i, reason: "Personal groceries" },
+  {
+    title: /Amazon Grocery.*Ground Black Pepper/i,
+    reason: "Personal groceries",
+  },
+  { title: /EcoNour.*Windshield Sun Shade/i, reason: "Personal vehicle item" },
+  { title: /TIPGO.*Qtip Holder/i, reason: "Owner's personal bathroom" },
 ];
 
 function getLocalCredentials(): { url: string; serviceRoleKey: string } {
@@ -174,6 +194,13 @@ async function main() {
       parsed.items = parsed.items.filter(
         (it) => !exclusion.title.test(it.title),
       );
+    }
+
+    if (parsed.items.length === 0) {
+      console.log(
+        `SKIP (fully excluded) ${file} — ${parsed.excludedItems.map((e) => e.title).join("; ")}`,
+      );
+      continue;
     }
 
     const title = documentTitleFor(parsed.orderNumber);

@@ -33,14 +33,19 @@ const DATE_ALIASES = [
 ];
 const DESCRIPTION_ALIASES = [
   "description",
+  "transaction description",
   "memo",
   "name",
   "payee",
   "merchant",
 ];
-const AMOUNT_ALIASES = ["amount"];
+const AMOUNT_ALIASES = ["amount", "transaction amount"];
 const DEBIT_ALIASES = ["debit", "withdrawal", "withdrawals"];
 const CREDIT_ALIASES = ["credit", "deposit", "deposits"];
+// Some exports (e.g. Capital One) use a single always-positive amount column
+// plus a separate "Transaction Type" column ("Credit"/"Debit") for sign,
+// rather than either a signed amount or separate debit/credit AMOUNT columns.
+const TYPE_ALIASES = ["type", "transaction type"];
 
 // income keywords are checked when the raw amount is positive (money in);
 // expense keywords when it's negative (money out) — same description text
@@ -101,9 +106,11 @@ function findColumn(headers: string[], aliases: string[]): number {
 function normalizeDate(raw: string): string | undefined {
   const s = raw.trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
   if (m) {
-    const [, mm, dd, yyyy] = m;
+    const [, mm, dd, y] = m;
+    // 2-digit year (e.g. Capital One's MM/DD/YY exports) -> 20YY.
+    const yyyy = y.length === 2 ? `20${y}` : y;
     return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
   }
   return undefined;
@@ -155,6 +162,7 @@ export function parseTransactionsCsv(
   const amountIdx = findColumn(headers, AMOUNT_ALIASES);
   const debitIdx = findColumn(headers, DEBIT_ALIASES);
   const creditIdx = findColumn(headers, CREDIT_ALIASES);
+  const typeIdx = findColumn(headers, TYPE_ALIASES);
 
   if (
     dateIdx === -1 ||
@@ -180,6 +188,14 @@ export function parseTransactionsCsv(
     let signedAmount: number | undefined;
     if (amountIdx !== -1) {
       signedAmount = parseSignedAmount(cells[amountIdx] ?? "");
+      // A single always-positive amount column needs a separate Type column
+      // to know direction (e.g. Capital One: "Transaction Amount" is never
+      // negative; "Transaction Type" says Credit/Debit).
+      if (signedAmount !== undefined && typeIdx !== -1) {
+        const type = (cells[typeIdx] ?? "").trim().toLowerCase();
+        if (type === "debit") signedAmount = -Math.abs(signedAmount);
+        else if (type === "credit") signedAmount = Math.abs(signedAmount);
+      }
     } else {
       const debit = parseSignedAmount(cells[debitIdx] ?? "") ?? 0;
       const credit = parseSignedAmount(cells[creditIdx] ?? "") ?? 0;
