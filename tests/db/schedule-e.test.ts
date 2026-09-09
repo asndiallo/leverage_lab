@@ -332,6 +332,29 @@ describe("Schedule E engine", () => {
       expect(taxes.amount_cents).toBe(0);
     });
 
+    it("flags mortgage-interest as 'actual' once an interest_payment transaction is logged, not always 'computed'", async () => {
+      // Regression test: property_schedule_e's interest CTE used to hardcode
+      // source: 'computed' whenever rental-use % was configured, even when
+      // property_annual_interest_paid_cents() itself was using a real
+      // transaction under the hood.
+      await createTestTransaction(user.client, user.id, propertyId, {
+        txn_date: "2026-09-01",
+        amount_cents: 138_349,
+        category: "interest_payment",
+      });
+
+      const { data, error } = await user.client.rpc("property_schedule_e", {
+        p_property_id: propertyId,
+        p_tax_year: 2026,
+      });
+      if (error) throw error;
+      const interest = data!.find((r) => r.line_code === "mortgage_interest")!;
+      expect(interest.source).toBe("actual");
+      expect(interest.amount_cents).toBe(
+        Math.round(138_349 * 0.5), // 50% rental-use in this fixture's beforeAll
+      );
+    });
+
     it("includes a positive, prorated depreciation line covering the building + the capital improvement", async () => {
       const { data, error } = await user.client.rpc("property_schedule_e", {
         p_property_id: propertyId,
