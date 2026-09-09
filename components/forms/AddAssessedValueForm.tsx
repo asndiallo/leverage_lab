@@ -53,13 +53,7 @@ export function AddAssessedValueForm({ propertyId }: { propertyId: string }) {
           </Select>
         </Field>
         <Field label="Land value ($)">
-          <Input
-            name="land_value"
-            type="number"
-            step="0.01"
-            min="0"
-            required
-          />
+          <Input name="land_value" type="number" step="0.01" min="0" required />
         </Field>
         <Field label="Improvement value ($)">
           <Input

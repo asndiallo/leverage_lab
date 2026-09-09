@@ -47,13 +47,16 @@ export function TaxBreakdown({
         </div>
         <div className="flex items-center gap-2">
           <AddAssessedValueForm propertyId={propertyId} />
-          <AddTaxYearForm propertyId={propertyId} jurisdictions={jurisdictions} />
+          <AddTaxYearForm
+            propertyId={propertyId}
+            jurisdictions={jurisdictions}
+          />
         </div>
       </div>
       {rows.length === 0 && (
         <p className="text-muted-foreground border-b px-5 py-3 text-xs">
-          No tax rates on record for {year ?? "this year"} yet — add them
-          above once your county certificate arrives.
+          No tax rates on record for {year ?? "this year"} yet — add them above
+          once your county certificate arrives.
         </p>
       )}
       <Table className="min-w-[520px]">

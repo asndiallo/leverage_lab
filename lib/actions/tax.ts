@@ -33,8 +33,12 @@ export async function addTaxYear(
 
   // Rate inputs are named rate_<jurisdiction_id> (see AddTaxYearForm) since
   // the set of jurisdictions is dynamic per property.
-  const rows: { user_id: string; jurisdiction_id: string; tax_year: number; rate: number }[] =
-    [];
+  const rows: {
+    user_id: string;
+    jurisdiction_id: string;
+    tax_year: number;
+    rate: number;
+  }[] = [];
   for (const [key, value] of formData.entries()) {
     if (!key.startsWith("rate_")) continue;
     const raw = String(value).trim();

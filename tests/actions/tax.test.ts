@@ -80,7 +80,9 @@ describe("addTaxYear", () => {
       .select("jurisdiction_id, rate")
       .eq("tax_year", 2027)
       .in("jurisdiction_id", [jIsd, jCounty]);
-    const byJ = Object.fromEntries(data!.map((r) => [r.jurisdiction_id, r.rate]));
+    const byJ = Object.fromEntries(
+      data!.map((r) => [r.jurisdiction_id, r.rate]),
+    );
     expect(byJ[jIsd]).toBeCloseTo(0.010769, 6);
     expect(byJ[jCounty]).toBeCloseTo(0.002784, 6);
   });

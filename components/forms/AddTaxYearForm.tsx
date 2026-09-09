@@ -43,7 +43,12 @@ export function AddTaxYearForm({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {jurisdictions.map((j) => (
           <Field key={j.id} label={`${j.name} ($/$100)`}>
-            <Input name={`rate_${j.id}`} type="number" step="0.000001" min="0" />
+            <Input
+              name={`rate_${j.id}`}
+              type="number"
+              step="0.000001"
+              min="0"
+            />
           </Field>
         ))}
       </div>
